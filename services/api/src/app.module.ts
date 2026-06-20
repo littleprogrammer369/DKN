@@ -8,6 +8,8 @@ import { WeatherModule } from './weather/weather.module';
 import { AiModule } from './ai/ai.module';
 import { IrrigationModule } from './irrigation/irrigation.module';
 import { PestsModule } from './pests/pests.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ReportsModule } from './reports/reports.module';
 import { PrismaModule } from './prisma.module';
 
 @Module({
@@ -22,6 +24,8 @@ import { PrismaModule } from './prisma.module';
     AiModule,
     IrrigationModule,
     PestsModule,
+    NotificationsModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
