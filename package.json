@@ -1,0 +1,16 @@
+{
+  "name": "dadeh-kesht-novin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "داده کشت نوین - هوش مصنوعی در خدمت کشاورزی",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=8"
+  }
+}

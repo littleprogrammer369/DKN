@@ -1,0 +1,279 @@
+// Prisma Schema — داده کشت نوین
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User & Auth ──────────────────────────────────────────
+
+enum UserRole {
+  FARMER
+  COMPANY
+  ADMIN
+}
+
+enum UserPlan {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  phone         String    @unique
+  email         String?
+  firstName     String?   @map("first_name")
+  lastName      String?   @map("last_name")
+  passwordHash  String?   @map("password_hash")
+  avatar        String?
+  role          UserRole  @default(FARMER)
+  plan          UserPlan  @default(FREE)
+  isVerified    Boolean   @default(false) @map("is_verified")
+  isGuest       Boolean   @default(false) @map("is_guest")
+  isTwoFactor   Boolean   @default(false) @map("is_two_factor")
+  googleId      String?   @unique @map("google_id")
+  refreshToken  String?   @map("refresh_token")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  farms           Farm[]
+  irrigationRecs  IrrigationRecord[]
+  pestReports     PestReport[]
+  aiChats         AIChat[]
+  notifications   Notification[]
+  subscriptions   Subscription[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(uuid()) @db.Uuid
+  phone     String
+  code      String
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone, code])
+  @@map("otp_codes")
+}
+
+// ─── Farms & Land ─────────────────────────────────────────
+
+enum IrrigationType {
+  DRIP
+  SPRINKLER
+  SURFACE
+  SUBSURFACE
+}
+
+enum WaterSource {
+  WELL
+  RIVER
+  QANAT
+  DAM
+  TAP
+}
+
+model Farm {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @map("user_id") @db.Uuid
+  name            String
+  product         String         @default("گندم")
+  province        String?
+  city            String?
+  areaHa          Float?         @map("area_ha")
+  soilType        String?        @map("soil_type")
+  cropDate        DateTime?      @map("crop_date")
+  waterSource     WaterSource?   @map("water_source")
+  irrigationType  IrrigationType? @map("irrigation_type")
+  geojson         Json?
+  isActive        Boolean        @default(true) @map("is_active")
+  tags            Json?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  satelliteData   SatelliteData[]
+  weatherData     WeatherData[]
+  irrigationRecs  IrrigationRecord[]
+  pestReports     PestReport[]
+  aiChats         AIChat[]
+  notifications   Notification[]
+
+  @@index([userId])
+  @@map("farms")
+}
+
+// ─── Satellite & Weather ──────────────────────────────────
+
+model SatelliteData {
+  id          String   @id @default(uuid()) @db.Uuid
+  farmId      String   @map("farm_id") @db.Uuid
+  ndvi        Float?
+  evi         Float?
+  savi        Float?
+  ndwi        Float?
+  msi         Float?
+  source      String?
+  imageUrl    String?  @map("image_url")
+  capturedAt  DateTime @map("captured_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, capturedAt])
+  @@map("satellite_data")
+}
+
+model WeatherData {
+  id            String   @id @default(uuid()) @db.Uuid
+  farmId        String   @map("farm_id") @db.Uuid
+  temperature   Float?
+  humidity      Float?
+  windSpeed     Float?   @map("wind_speed")
+  precipitation Float?
+  soilMoisture  Float?   @map("soil_moisture")
+  source        String?
+  recordedAt    DateTime @map("recorded_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  farm          Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, recordedAt])
+  @@map("weather_data")
+}
+
+// ─── Irrigation ───────────────────────────────────────────
+
+model IrrigationRecord {
+  id            String         @id @default(uuid()) @db.Uuid
+  farmId        String         @map("farm_id") @db.Uuid
+  userId        String         @map("user_id") @db.Uuid
+  amount        Float?
+  duration      Int?
+  scheduledAt   DateTime?      @map("scheduled_at")
+  appliedAt     DateTime?      @map("applied_at")
+  isApplied     Boolean        @default(false) @map("is_applied")
+  confidence    Float?
+  method        IrrigationType?
+  notes         String?
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, scheduledAt])
+  @@map("irrigation_records")
+}
+
+// ─── Pests & Diseases ────────────────────────────────────
+
+enum PestSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model PestReport {
+  id          String       @id @default(uuid()) @db.Uuid
+  farmId      String       @map("farm_id") @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  pestName    String       @map("pest_name")
+  pestType    String?      @map("pest_type")
+  severity    PestSeverity @default(LOW)
+  probability Float?
+  impact      Float?
+  image       String?
+  chemical    String?
+  description String?
+  isActive    Boolean      @default(true) @map("is_active")
+  detectedAt  DateTime     @map("detected_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, detectedAt])
+  @@map("pest_reports")
+}
+
+// ─── AI Chat ───────────────────────────────────────────────
+
+model AIChat {
+  id        String   @id @default(uuid()) @db.Uuid
+  farmId    String?  @map("farm_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String
+  content   String
+  tokens    Int?     @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  farm      Farm?    @relation(fields: [farmId], references: [id], onDelete: SetNull)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_chats")
+}
+
+// ─── Notifications ────────────────────────────────────────
+
+enum NotificationType {
+  IRRIGATION
+  PEST_ALERT
+  WEATHER_ALERT
+  HARVEST
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  farmId    String?          @map("farm_id") @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  isRead    Boolean          @default(false) @map("is_read")
+  data      Json?
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farm      Farm?            @relation(fields: [farmId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ─── Subscription & Payments ──────────────────────────────
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Subscription {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @map("user_id") @db.Uuid
+  plan          UserPlan
+  startDate     DateTime      @map("start_date")
+  endDate       DateTime      @map("end_date")
+  isActive      Boolean       @default(true) @map("is_active")
+  paymentStatus PaymentStatus @default(PENDING)
+  amount        Float?
+  authority     String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@map("subscriptions")
+}
