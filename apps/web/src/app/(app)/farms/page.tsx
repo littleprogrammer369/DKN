@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const farmsData = [
-  { id: '1', name: 'مزرعه گندم شماره ۱', product: 'گندم', area: '۳.۲ هکتار', location: 'ساوه', health: 85, status: 'سالم' },
-  { id: '2', name: 'مزرعه گندم شماره ۲', product: 'گندم', area: '۱.۸ هکتار', location: 'ساوه', health: 72, status: 'نیاز توجه' },
-];
+interface Farm { id: string; name: string; city?: string; province?: string; areaHa?: number; product?: string; isActive: boolean }
 
 export default function FarmsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all' | 'active'>('all');
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) { router.push('/'); return; }
+    fetch('/api/v1/farms', { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.json()).then(d => { setFarms(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [router]);
+
+  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 text-sm">⏳</p></div>;
 
   return (
     <>
@@ -19,68 +27,41 @@ export default function FarmsPage() {
           <p className="text-xs text-gray-500">مدیریت زمین‌ها</p>
           <h1 className="text-lg font-extrabold text-gray-800">زمین‌های من</h1>
         </div>
-        <button className="btn-primary !w-auto !py-2 !px-4 !text-xs">
+        <button onClick={() => router.push('/setup')} className="btn-primary !w-auto !py-2 !px-4 !text-xs">
           + زمین جدید
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="glass-deep p-1 flex mb-4">
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'all' ? 'bg-white shadow-sm text-brand-green' : 'text-gray-500'
-          }`}
-        >
-          همه ({farmsData.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('active')}
-          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'active' ? 'bg-white shadow-sm text-brand-green' : 'text-gray-500'
-          }`}
-        >
-          فعال ({farmsData.filter(f => f.health > 70).length})
-        </button>
-      </div>
-
-      {/* Farm List */}
-      {farmsData.map((farm) => (
-        <div
-          key={farm.id}
-          className="card cursor-pointer hover:shadow-lg transition-all"
-          onClick={() => router.push(`/farms/${farm.id}`)}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🌾</span>
-              <div>
-                <div className="text-sm font-bold text-gray-800">{farm.name}</div>
-                <div className="text-[10px] text-gray-400">{farm.location} · {farm.area}</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className={`text-xs font-bold ${
-                farm.health > 80 ? 'text-green-600' : 'text-amber-600'
-              }`}>
-                {farm.health}%
-              </div>
-              <span className={`badge ${
-                farm.health > 80 ? 'badge-success' : 'badge-warn'
-              }`}>
-                {farm.status}
-              </span>
-            </div>
-          </div>
-          <div className="prog-bg">
-            <div className={`prog-fill ${
-              farm.health > 80
-                ? 'bg-gradient-to-r from-green-400 to-green-500'
-                : 'bg-gradient-to-r from-amber-400 to-amber-500'
-            }`} style={{ width: `${farm.health}%` }} />
-          </div>
+      {farms.length === 0 ? (
+        <div className="text-center mt-12">
+          <div className="text-4xl mb-3">🏞️</div>
+          <p className="text-sm text-gray-500 mb-4">هنوز هیچ زمینی ثبت نکردی</p>
+          <button onClick={() => router.push('/setup')} className="btn-primary">+ ساخت اولین زمین</button>
         </div>
-      ))}
+      ) : (
+        farms.map(farm => {
+          const location = [farm.city, farm.province].filter(Boolean).join('، ');
+          const areaStr = farm.areaHa ? farm.areaHa + ' هکتار' : '';
+          const subtitle = [location, areaStr].filter(Boolean).join(' · ');
+          return (
+            <div key={farm.id} onClick={() => router.push('/farms/' + farm.id)}
+              className="card cursor-pointer hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🌾</span>
+                  <div>
+                    <div className="text-sm font-bold text-gray-800">{farm.name}</div>
+                    {subtitle && <div className="text-[10px] text-gray-400">{subtitle}</div>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="badge badge-success text-xs">{farm.product || 'گندم'}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
     </>
   );
 }

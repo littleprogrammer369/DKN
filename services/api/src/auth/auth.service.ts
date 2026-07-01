@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcryptjs';
@@ -10,62 +10,57 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  // Send OTP code
-  async sendOtp(phone: string): Promise<{ message: string; expiresIn: number }> {
-    // Generate 4-digit code
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
+  // Register new user
+  async register(dto: { phone: string; password: string; email?: string; firstName?: string }) {
+    // Check if phone already exists
+    const existing = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
+    if (existing) {
+      throw new ConflictException('این شماره قبلاً ثبت شده است');
+    }
 
-    // Store in DB (expires in 2 minutes)
-    await this.prisma.otpCode.create({
-      data: {
-        phone,
-        code,
-        expiresAt: new Date(Date.now() + 2 * 60 * 1000),
-      },
-    });
+    // Hash password
+    const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    // In production: send via Kavenegar SMS
-    console.log(`[OTP] ${phone}: ${code}`);
-
-    return { message: 'کد تأیید ارسال شد', expiresIn: 120 };
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          phone: dto.phone,
+          passwordHash,
+          email: dto.email || null,
+          firstName: dto.firstName || null,
+          isVerified: true,
+        },
+      });
+      return this.generateTokens(user);
+    } catch (error: any) {
+      if (error?.code === 'P2002') {
+        throw new ConflictException('این شماره قبلاً ثبت شده است');
+      }
+      throw error;
+    }
   }
 
-  // Verify OTP and login/register
-  async verifyOtp(phone: string, code: string) {
-    const otp = await this.prisma.otpCode.findFirst({
-      where: {
-        phone,
-        code,
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (!otp) {
-      throw new BadRequestException('کد تأیید نامعتبر یا منقضی شده است');
-    }
-
-    // Mark OTP as used
-    await this.prisma.otpCode.update({
-      where: { id: otp.id },
-      data: { usedAt: new Date() },
-    });
-
-    // Find or create user
-    let user = await this.prisma.user.findUnique({ where: { phone } });
+  // Login with phone + password
+  async login(phone: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { phone } });
     if (!user) {
-      user = await this.prisma.user.create({
-        data: { phone, isVerified: true },
-      });
-    } else {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { isVerified: true },
-      });
+      throw new BadRequestException('شماره تلفن یا رمز عبور اشتباه است');
     }
 
-    // Generate tokens
+    if (!user.passwordHash) {
+      throw new BadRequestException('این حساب از طریق رمز عبور قابل ورود نیست');
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      throw new BadRequestException('شماره تلفن یا رمز عبور اشتباه است');
+    }
+
+    return this.generateTokens(user);
+  }
+
+  // Generate JWT tokens
+  private generateTokens(user: any) {
     const payload = { sub: user.id, phone: user.phone, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
@@ -74,6 +69,7 @@ export class AuthService {
       user: {
         id: user.id,
         phone: user.phone,
+        email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,

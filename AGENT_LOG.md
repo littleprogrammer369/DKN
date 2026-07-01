@@ -10,75 +10,61 @@
 
 | # | مرحله | وضعیت | شروع | پایان | یادداشت |
 |---|--------|--------|------|-------|---------|
-| ۰ | آماده‌سازی سرور | ✅ کامل | ۲۰۲۶-۰۶-۱۹ | ۲۰۲۶-۰۶-۱۹ | نصب Node, pnpm, Docker, PostgreSQL, Redis, Apache, UFW |
-| ۱ | راه‌اندازی پروژه | ✅ کامل | ۲۰۲۶-۰۶-۱۹ | ۲۰۲۶-۰۶-۲۰ | Monorepo, Prisma, NestJS, Next.js |
-| ۲ | تبدیل UI کارفرما | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | ۷ صفحه Next.js از HTML مرجع |
-| ۳ | احراز هویت (Backend) | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Auth module (OTP+JWT) |
-| ۴ | مدیریت زمین (Backend) | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Farms module CRUD |
-| ۵ | داشبورد و متریک‌ها | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Weather + Satellite modules |
-| ۶ | آبیاری و آفات | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Irrigation + Pests modules |
-| ۷ | دستیار AI | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | AI chat module + Frontend |
-| ۸ | اعلان‌ها و گزارش‌ها | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Notifications + Reports modules |
-| ۹ | تنظیمات Apache | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Virtual Host + SSL + Reverse Proxy |
-| ۱۰ | تست نهایی | ✅ کامل | ۲۰۲۶-۰۶-۲۰ | ۲۰۲۶-۰۶-۲۰ | Build test 🟢 |
+| ۰ | آماده‌سازی سرور | ⏳ در انتظار | - | - | - |
+| ۱ | راه‌اندازی پروژه | ⏳ در انتظار | - | - | - |
+| ۲ | تبدیل UI کارفرما | ⏳ در انتظار | - | - | - |
+| ۳ | احراز هویت | ⏳ در انتظار | - | - | - |
+| ۴ | مدیریت زمین با نقشه | ⏳ در انتظار | - | - | - |
+| ۵ | داشبورد و متریک‌ها | ⏳ در انتظار | - | - | - |
+| ۶ | آبیاری و آفات | ⏳ در انتظار | - | - | - |
+| ۷ | دستیار AI | ⏳ در انتظار | - | - | - |
+| ۸ | اعلان‌ها و گزارش‌ها | ⏳ در انتظار | - | - | - |
+| ۹ | تنظیمات Apache | ⏳ در انتظار | - | - | - |
+| ۱۰ | تست نهایی | ⏳ در انتظار | - | - | - |
 
 ---
 
 ## 🔄 مرحله فعلی
 
-**🎉 تمام مراحل کامل شد!**
+**⏳ هیچ‌کدام — در انتظار شروع Cline**
 
-### وضعیت نهایی سرور
-- ✅ Node.js v20.20.2
-- ✅ pnpm 10.34.4
-- ✅ Docker PostgreSQL 16 + Redis 7
-- ✅ Apache 2.4.41 + Virtual Host
-- ✅ NestJS build (۱۲ ماژول)
-- ✅ Next.js build (۱۴ صفحه)
-- ✅ Prisma (۱۰ مدل، ۱۱ جدول)
-- ✅ ۳ Git commit
+### وضعیت سرور
+- ⏳ نامشخص — Cline باید بررسی کند
 
 ### کار بعدی
-- استقرار در Production (Apache + PM2)
-- اتصال API Keyهای واقعی (Gemini, OpenWeather, Kavenegar)
-- خرید دامنه و نصب SSL
-- تست با کاربران بتا (ساوه)
+1. Cline باید فایل‌های زیر را بخواند:
+   - `PROJECT_SPEC.md` (مستند کامل)
+   - `CLINE_INSTRUCTIONS.md` (دستورالعمل)
+   - `dadeh_kesht_novin.html` (UI مرجع)
+   - `AGENT_LOG.md` (این فایل)
+2. سپس مرحله ۰ را شروع کند
 
 ---
 
 ## 📜 تاریخچه رویدادها
 
-### ۲۰۲۶-۰۶-۱۹ ۲۲:۵۹ — ایجاد پروژه
+### ۲۰۲۶-۰۶-۱۹ — ایجاد پروژه
 
 **عملیات:**
 - ✅ ساختار پروژه ایجاد شد
-- ✅ فایل `PROJECT_SPEC.md` نوشته شد
-- ✅ فایل `CLINE_INSTRUCTIONS.md` نوشته شد
-- ✅ فایل `AGENT_LOG.md` ایجاد شد
+- ✅ فایل `PROJECT_SPEC.md` نوشته شد (مستند کامل)
+- ✅ فایل `CLINE_INSTRUCTIONS.md` نوشته شد (دستورالعمل)
+- ✅ فایل `AGENT_LOG.md` ایجاد شد (لاگ)
 - ✅ فایل UI کارفرما کپی شد (`dadeh_kesht_novin.html`)
 
----
+**فایل‌های پروژه:**
+```
+dadeh-kesht-novin/
+├── PROJECT_SPEC.md             # مستند کامل (تئوری + کد)
+├── CLINE_INSTRUCTIONS.md       # دستورالعمل Cline
+├── AGENT_LOG.md                # این فایل (لاگ)
+└── dadeh_kesht_novin.html      # UI مرجع کارفرما
+```
 
-### ۲۰۲۶-۰۶-۱۹ ۲۳:۰۵ — مرحله ۰: آماده‌سازی سرور ✅
-
-**مرحله:** ۰
-**وضعیت:** ✅ موفق
-
-**اقدامات:**
-- ✅ بررسی نصب بودن نرم‌افزارها
-- ✅ نصب pnpm 10.34.4
-- ✅ ایجاد docker-compose.yml برای PostgreSQL 16 + Redis 7
-- ✅ راه‌اندازی سرویس‌های Docker
-- ✅ نصب psql-client و redis-tools
-- ✅ تست اتصال PostgreSQL و Redis
-- ✅ تنظیم فایروال UFW
-
-**فایل‌های تغییر یافته:**
-- `docker-compose.yml` — ایجاد شد
-- `AGENT_LOG.md` — بروزرسانی
-
-**مرحله بعدی:**
-- شروع مرحله ۱: راه‌اندازی پروژه
+**یادداشت:**
+- Cline هنوز شروع نکرده
+- منتظر اجرای Cline CLI در سرور Ubuntu 20
+- تمام اطلاعات لازم در `PROJECT_SPEC.md` موجود است
 
 ---
 
@@ -87,121 +73,97 @@
 | آیتم | مقدار |
 |------|-------|
 | کل مراحل | ۱۰ |
-| مراحل تکمیل‌شده | ۱۰ |
+| مراحل تکمیل‌شده | ۰ |
 | مراحل در حال | ۰ |
-| مراحل باقی‌مانده | ۰ |
-| درصد کلی | ۱۰۰٪ |
-| آخرین فایل تغییر یافته | AGENT_LOG.md, apache/, ecosystem.config.js |
-| Git Commit | ۴ commit (bcca681 → 99492a4 → final) |
+| مراحل باقی‌مانده | ۱۰ |
+| درصد کلی | ۰٪ |
+| آخرین خطا | ندارد |
+| آخرین فایل تغییر یافته | - |
 
 ---
 
-## 🛠️ دستورات سریع
+## 🛠️ دستورات سریع (برای Cline)
 
 ```bash
+# بررسی فایل‌ها
 ls -la
-docker compose ps
-PGPASSWORD=dkn_secure_pass_1402 psql -h localhost -U dkn_user -d dadeh_kesht_novin
-redis-cli -h localhost -p 6379 -a dkn_redis_pass_1402 ping
+
+# خواندن مستند اصلی
+cat PROJECT_SPEC.md
+
+# خواندن دستورالعمل
+cat CLINE_INSTRUCTIONS.md
+
+# خواندن این فایل (لاگ)
+cat AGENT_LOG.md
+
+# رفتن به مرحله بعدی
+# (Cline باید خودش تشخیص دهد)
+```
+
+---
+
+## 📝 فرمت لاگ (برای استفاده Cline)
+
+```markdown
+## [تاریخ] [ساعت] — [عنوان کوتاه]
+
+**مرحله:** [۰-۱۰]
+**وضعیت:** ✅ موفق / ⚠️ با اخطار / ❌ ناموفق
+
+### اقدامات:
+- مورد ۱
+- مورد ۲
+- مورد ۳
+
+### نتیجه:
+- خلاصه
+
+### خطاها (در صورت وجود):
+- **خطا:** متن خطا
+- **علت:** چرا رخ داد
+- **راه‌حل:** چطور حل شد
+
+### فایل‌های تغییر یافته:
+- `path/to/file.ts` — توضیح تغییر
+
+### دستورات اجرا شده:
+```bash
+command 1
+command 2
+```
+
+### مرحله بعدی:
+- چه کاری باید انجام شود
 ```
 
 ---
 
 ## ⚠️ خطاهای مهم
 
-| خطا | علت | راه‌حل | وضعیت |
-|-----|-----|--------|--------|
-| exec format error در postgis image | نداشتن ARM64 image | استفاده از postgres:16-alpine | ✅ رفع موقت |
+### (هنوز خطایی ثبت نشده)
 
-### ۲۰۲۶-۰۶-۲۰ ۰۰:۲۵ — مرحله ۱: راه‌اندازی پروژه ✅
+---
 
-**مرحله:** ۱
-**وضعیت:** ✅ موفق
+## 💾 Backup
 
-**اقدامات:**
-- ✅ ایجاد ساختار Monorepo (apps/web + services/api)
-- ✅ ایجاد package.json ریشه و pnpm-workspace.yaml
-- ✅ ایجاد فایل‌های تنظیمات NestJS (tsconfig, nest-cli)
-- ✅ ایجاد فایل‌های تنظیمات Next.js (next.config, tailwind, postcss)
-- ✅ ایجاد Prisma Schema با ۱۰ مدل (User, Farm, SatelliteData, WeatherData, IrrigationRecord, PestReport, AIChat, Notification, Subscription, OtpCode)
-- ✅ ایجاد فایل .env
-- ✅ نصب وابستگی‌ها با pnpm (۱:۲۶ دقیقه)
-- ✅ اجرای Prisma generate و migrate (۱۱ جدول در PostgreSQL)
-- ✅ ایجاد فایل‌های اصلی NestJS (main.ts, app.module.ts, prisma.service.ts)
-- ✅ ایجاد ۸ ماژول خالی (Auth, Users, Farms, Satellite, Weather, AI, Irrigation, Pests)
-- ✅ Build موفق NestJS
-- ✅ مقداردهی Git repository
-- ✅ ایجاد .gitignore
+Cline هر ۱۰ اقدام یا پس از هر مرحله، باید این فایل را با `git commit` ذخیره کند:
 
-**فایل‌های ایجاد شده:**
-- `package.json` — ریشه
-- `pnpm-workspace.yaml` — workspace config
-- `tsconfig.json` — ریشه
-- `.env` — متغیرهای محیطی
-- `.gitignore`
-- `apps/web/package.json` — Next.js
-- `apps/web/next.config.js`
-- `apps/web/tailwind.config.js`
-- `apps/web/postcss.config.js`
-- `apps/web/tsconfig.json`
-- `services/api/package.json` — NestJS
-- `services/api/tsconfig.json`
-- `services/api/tsconfig.build.json`
-- `services/api/nest-cli.json`
-- `services/api/prisma/schema.prisma` — ۱۰ مدل
-- `services/api/src/main.ts`
-- `services/api/src/app.module.ts`
-- `services/api/src/prisma.service.ts`
-- `services/api/src/prisma.module.ts`
-- `services/api/src/auth/auth.module.ts`
-- `services/api/src/users/users.module.ts`
-- `services/api/src/farms/farms.module.ts`
-- `services/api/src/satellite/satellite.module.ts`
-- `services/api/src/weather/weather.module.ts`
-- `services/api/src/ai/ai.module.ts`
-- `services/api/src/irrigation/irrigation.module.ts`
-- `services/api/src/pests/pests.module.ts`
-- `services/api/prisma/migrations/` — migration اولیه
+```bash
+git add AGENT_LOG.md
+git commit -m "لاگ مرحله X — [خلاصه]"
+```
 
-**مرحله بعدی:**
-- شروع مرحله ۲: تبدیل UI کارفرما به کامپوننت‌های Next.js
+---
 
-### ۲۰۲۶-۰۶-۲۰ ۰۰:۵۰ — مرحله ۲: تبدیل UI کارفرما ✅
+## 🎯 یادآوری برای Cline
 
-**مرحله:** ۲
-**وضعیت:** ✅ موفق
+1. **قبل از هر کار:** این فایل را بخوان
+2. **بعد از هر کار:** این فایل را update کن
+3. **اگه خطا رخ داد:** با جزئیات ثبت کن
+4. **اگه موفق شدی:** کوتاه ثبت کن + commit کن
+5. **اگه قطع شدی:** آخرین entry نشان‌دهنده ادامه است
 
-**اقدامات:**
-- ✅ ایجاد `globals.css` با استایل‌های Glass Morphism
-- ✅ ایجاد Root Layout با RTL و Vazirmatn
-- ✅ ایجاد NavBar کامپوننت با ۵ دکمه ناوبری
-- ✅ ایجاد App Layout مشترک
-- ✅ ایجاد صفحه Login با OTP دو مرحله‌ای
-- ✅ ایجاد صفحه Dashboard با امتیاز سلامت، آب‌وهوا، دسترسی سریع
-- ✅ ایجاد صفحه Farms لیست زمین‌ها
-- ✅ ایجاد صفحه Farm Detail با نقشه و اطلاعات
-- ✅ ایجاد صفحه Irrigation با توصیه آبیاری
-- ✅ ایجاد صفحه Pests با سطح ریسک و تهدیدات
-- ✅ ایجاد صفحه AI Chat با پاسخ‌های هوشمند
-- ✅ ایجاد کامپوننت‌های HealthGauge و WeatherCard
-- ✅ ایجاد PWA manifest.json
-- ✅ Next.js build در حال اجرا
+---
 
-**فایل‌های ایجاد شده:**
-- `apps/web/src/app/globals.css`
-- `apps/web/src/app/layout.tsx`
-- `apps/web/src/app/page.tsx` (Login)
-- `apps/web/src/app/(app)/layout.tsx`
-- `apps/web/src/app/(app)/dashboard/page.tsx`
-- `apps/web/src/app/(app)/farms/page.tsx`
-- `apps/web/src/app/(app)/farms/[id]/page.tsx`
-- `apps/web/src/app/(app)/irrigation/page.tsx`
-- `apps/web/src/app/(app)/pests/page.tsx`
-- `apps/web/src/app/(app)/ai/page.tsx`
-- `apps/web/src/components/NavBar.tsx`
-- `apps/web/src/components/HealthGauge.tsx`
-- `apps/web/src/components/WeatherCard.tsx`
-- `apps/web/public/manifest.json`
-
-**مرحله بعدی:**
-- شروع مرحله ۳: احراز هویت (Auth Module در NestJS + JWT)
+**شروع کن! 🚀**

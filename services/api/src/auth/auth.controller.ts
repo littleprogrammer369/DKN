@@ -6,14 +6,22 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('send-otp')
-  async sendOtp(@Body('phone') phone: string) {
-    return this.authService.sendOtp(phone);
+  @Post('register')
+  async register(
+    @Body('phone') phone: string,
+    @Body('password') password: string,
+    @Body('email') email?: string,
+    @Body('firstName') firstName?: string,
+  ) {
+    return this.authService.register({ phone, password, email, firstName });
   }
 
-  @Post('verify-otp')
-  async verifyOtp(@Body('phone') phone: string, @Body('code') code: string) {
-    return this.authService.verifyOtp(phone, code);
+  @Post('login')
+  async login(
+    @Body('phone') phone: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.login(phone, password);
   }
 
   @UseGuards(AuthGuard('jwt'))
