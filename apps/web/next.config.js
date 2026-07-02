@@ -14,6 +14,15 @@ const nextConfig = {
       headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
     },
   ],
+  // API proxy — در حالت development درخواست‌های /api/* به NestJS هدایت شود
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3001/api/:path*',
+      },
+    ];
+  },
   experimental: {
     optimizePackageImports: ['react-icons', 'date-fns-jalali'],
   },
