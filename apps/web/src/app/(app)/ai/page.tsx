@@ -44,10 +44,10 @@ export default function AiChatPage() {
   const suggestions = ['آبیاری گندم', 'آفات رایج', 'کوددهی', 'زمان برداشت', 'پیش‌بینی وضعیت'];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       <div className="mb-4">
-        <p className="text-xs text-gray-500">دستیار هوشمند</p>
-        <h1 className="text-lg font-extrabold text-gray-800">از AI بپرس</h1>
+        <p className="text-xs text-gray-500 dark:text-night-muted">دستیار هوشمند</p>
+        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">از AI بپرس</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto px-1 mb-3">

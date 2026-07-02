@@ -24,8 +24,8 @@ export default function NavBar() {
             className={`nav-btn ${isActive ? 'active' : ''}`}
             onClick={() => router.push(item.path)}
           >
-            <span className="text-lg">{item.icon}</span>
-            <span>{item.label}</span>
+            <span className={`text-lg ${isActive ? 'text-brand-green' : ''}`}>{item.icon}</span>
+            <span className={`text-[10px] font-semibold ${isActive ? 'text-brand-green' : 'text-gray-400 dark:text-night-muted'}`}>{item.label}</span>
           </button>
         );
       })}

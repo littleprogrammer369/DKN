@@ -19,8 +19,8 @@ export default function FarmDetailPage() {
       .then(r => r.json()).then(d => { setFarm(d); setLoading(false); }).catch(() => setLoading(false));
   }, [params.id, router]);
 
-  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400">⏳</p></div>;
-  if (!farm) return <div className="text-center mt-12"><p className="text-red-500">مزرعه یافت نشد</p></div>;
+  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted">⏳</p></div>;
+  if (!farm) return <div className="text-center mt-12"><p className="text-red-500 dark:text-red-400">مزرعه یافت نشد</p></div>;
 
   const location = [farm.city, farm.province].filter(Boolean).join('، ');
   const irrMap: Record<string, string> = { DRIP: 'قطره‌ای', SPRINKLER: 'بارانی', SURFACE: 'سطحی', SUBSURFACE: 'زیرزمینی' };
@@ -36,13 +36,13 @@ export default function FarmDetailPage() {
   };
 
   return (<>
-    <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 mb-3"><span>❮</span> بازگشت</button>
+    <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-3"><span>❮</span> بازگشت</button>
 
     <div className="flex items-center gap-3 mb-4">
       <span className="text-3xl">🌾</span>
       <div>
-        <h1 className="text-lg font-extrabold text-gray-800">{farm.name}</h1>
-        <p className="text-xs text-gray-400">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + farm.areaHa + ' هکتار' : ''}</p>
+        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">{farm.name}</h1>
+        <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + farm.areaHa + ' هکتار' : ''}</p>
       </div>
     </div>
 

@@ -20,10 +20,25 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: 'Vazirmatn', system-ui, sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ── Dark Mode Body ── */
+.dark body {
+  background: linear-gradient(160deg, #08110c 0%, #0a1a12 50%, #0d1f14 100%) !important;
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ── Selection ── */
+::selection {
+  background: rgba(43, 182, 115, 0.3);
+  color: inherit;
+}
+.dark ::selection {
+  background: rgba(43, 182, 115, 0.4);
+}
 
 /* ── Glass Card ── */
 @layer components {
@@ -169,4 +184,64 @@ html, body {
   .btn-outline:hover {
     background: rgba(43,182,115,0.05);
   }
+}
+
+/* ── Dark Mode Overrides ── */
+.dark .glass {
+  @apply bg-night-card/80 backdrop-blur-xl border-night-border/60;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+}
+.dark .glass-deep {
+  @apply bg-night-surface/60 backdrop-blur-lg border-night-border/40;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.dark .card {
+  @apply bg-night-card/80 backdrop-blur-xl border-night-border/60;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+}
+.dark .nav-bar {
+  @apply bg-night-surface/90 backdrop-blur-2xl border-night-border/50;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+}
+.dark .nav-btn {
+  @apply text-night-muted;
+}
+.dark .nav-btn.active {
+  @apply text-brand-green;
+}
+.dark .input-glass {
+  @apply bg-night-card/60 border-night-border/50 text-night-text placeholder:text-night-muted/50;
+}
+.dark .input-glass:focus {
+  @apply border-brand-green/40;
+  box-shadow: 0 0 0 3px rgba(43,182,115,0.15);
+}
+.dark .section-title {
+  @apply text-night-text/80;
+}
+.dark .chip {
+  background: rgba(43,182,115,0.15);
+  color: #4ADE80;
+  border-color: rgba(43,182,115,0.25);
+}
+.dark .chip:hover {
+  background: rgba(43,182,115,0.25);
+}
+.dark .badge-success {
+  @apply bg-green-900/40 text-green-300;
+}
+.dark .badge-warn {
+  @apply bg-amber-900/40 text-amber-300;
+}
+.dark .badge-danger {
+  @apply bg-red-900/40 text-red-300;
+}
+.dark .bubble-ai {
+  @apply bg-night-card/90 border-night-border/40;
+}
+.dark .prog-bg {
+  @apply bg-white/10;
+}
+.dark .dot {
+  @apply bg-night-muted/50;
 }

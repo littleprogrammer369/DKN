@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
@@ -23,6 +24,14 @@ module.exports = {
           'green-light': '#4ADE80',
           'green-dark': '#1A8B5A',
         },
+        night: {
+          bg: '#08110c',
+          surface: '#0f1f15',
+          card: '#152a1c',
+          border: '#1e3a28',
+          text: '#e2e8f0',
+          muted: '#94a3b8',
+        },
       },
       fontFamily: {
         sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
@@ -30,6 +39,7 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        'theme-swirl': 'themeSwirl 0.5s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -40,8 +50,13 @@ module.exports = {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        themeSwirl: {
+          '0%': { transform: 'rotate(0deg) scale(0.8)', opacity: '0.5' },
+          '100%': { transform: 'rotate(360deg) scale(1)', opacity: '1' },
+        },
       },
     },
   },
   plugins: [],
 };
+
