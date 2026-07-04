@@ -24,7 +24,8 @@ export default function AiChatPage() {
       });
       if (!res.ok) throw new Error('API error');
       const d = await res.json();
-      return d.reply || d.message || 'پاسخی دریافت نشد';
+      // برای backward compatibility با سرور جدید
+      return d.response || d.reply || d.message || 'پاسخی دریافت نشد';
     } catch {
       return '⚠️ در حال حاضر دستیار هوشمند در دسترس نیست. لطفاً دوباره تلاش کنید.';
     }
