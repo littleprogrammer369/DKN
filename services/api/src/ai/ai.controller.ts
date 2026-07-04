@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AiService } from './ai.service';
 
@@ -11,9 +11,10 @@ export class AiController {
   chat(
     @Body('message') message: string,
     @Body('farmId') farmId: string | undefined,
+    @Body('expertiseLevel') expertiseLevel: string | undefined,
     @Request() req: any,
   ) {
-    return this.aiService.chat(req.user.id, farmId, message);
+    return this.aiService.chat(req.user.id, farmId, message, expertiseLevel as any);
   }
 
   @Get('history')
@@ -21,3 +22,4 @@ export class AiController {
     return this.aiService.getHistory(req.user.id, limit || 20);
   }
 }
+

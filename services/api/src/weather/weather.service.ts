@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class WeatherService {
-  private readonly apiKey = 'zpka_7f09d14536c942f6af7c8c15ab82346a_3a1a1b2b';
+  private readonly apiKey = process.env.ACCUWEATHER_API_KEY || 'zpka_7f09d14536c942f6af7c8c15ab82346a_3a1a1b2b';
   private readonly baseUrl = 'https://dataservice.accuweather.com';
 
   constructor(private prisma: PrismaService) {}
