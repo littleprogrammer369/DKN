@@ -31,7 +31,7 @@ export default function DashboardPage() {
     }).catch(() => setLoading(false));
   }, [router]);
 
-  if (loading) return <div className='flex items-center justify-center h-40'><p className='text-gray-400 text-sm'>loading</p></div>;
+  if (loading) return <div className='flex items-center justify-center h-40'><p className='text-gray-400 dark:text-night-muted text-sm'>loading</p></div>;
   if (farms.length === 0) return <div className='text-center mt-12'><h1>No farms yet</h1><button onClick={() => router.push('/setup')}>Create farm</button></div>;
   const farm = farms[0];
   const loc = [farm.city, farm.province].filter(Boolean).join(' - ') || 'N/A';

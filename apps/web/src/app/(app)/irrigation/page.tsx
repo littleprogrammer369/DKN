@@ -116,7 +116,7 @@ export default function IrrigationPage() {
                     {d.tempMax ? Math.round(d.tempMax) : '--'}°
                   </div>
                   <div className="text-[9px] text-gray-400 dark:text-night-muted">{d.tempMin ? Math.round(d.tempMin) : '--'}°</div>
-                  {d.dayPrecipitation != null && <div className="text-[9px] text-blue-500 mt-0.5">🌧️ {d.dayPrecipitation}%</div>}
+                  {d.dayPrecipitation != null && <div className="text-[9px] text-blue-500 dark:text-blue-400 mt-0.5">🌧️ {d.dayPrecipitation}%</div>}
                 </div>
               ))}
             </div>

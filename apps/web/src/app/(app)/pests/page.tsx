@@ -19,7 +19,7 @@ export default function PestsPage() {
   if (!hasFarm) return (
     <div className="text-center mt-12">
       <div className="text-4xl mb-3">🧬</div>
-      <p className="text-sm text-gray-500 dark:text-night-muted mb-4">ابتدا یک مزرعه ثبت کنید</p>
+      <p className="text-sm text-gray-500 dark:text-night-muted dark:text-night-muted mb-4">ابتدا یک مزرعه ثبت کنید</p>
       <button onClick={() => router.push('/setup')} className="btn-primary">ساخت مزرعه</button>
     </div>
   );
@@ -27,12 +27,12 @@ export default function PestsPage() {
   return (
     <>
       <div className="mb-4">
-        <p className="text-xs text-gray-500 dark:text-night-muted">مرکز پایش ریسک</p>
+        <p className="text-xs text-gray-500 dark:text-night-muted dark:text-night-muted">مرکز پایش ریسک</p>
         <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">آفات و بیماری‌ها</h1>
       </div>
       <div className="card dark:bg-night-card/80 dark:border-night-border/60 mb-4 transition-colors duration-300">
         <div className="text-sm font-bold text-gray-700 dark:text-night-text/90 mb-3">🔍 وضعیت فعلی</div>
-        <p className="text-xs text-gray-500 dark:text-night-muted">
+        <p className="text-xs text-gray-500 dark:text-night-muted dark:text-night-muted">
           پایش آفات و بیماری‌ها بر اساس داده‌های محیطی و گزارش‌های ثبت‌شده انجام می‌شود.
         </p>
       </div>

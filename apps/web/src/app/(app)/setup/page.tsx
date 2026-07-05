@@ -49,29 +49,29 @@ export default function SetupPage() {
       <div className="text-center mb-6 mt-4">
         <div className="text-5xl mb-3">🌱</div>
         <h1 className="text-xl font-extrabold text-gray-800 dark:text-night-text">{userName ? userName + ' عزیز،' : ''} به داده کشت نوین خوش آمدی!</h1>
-        <p className="text-sm text-gray-500 dark:text-night-muted mt-2">بیا اولین مزرعه‌ات رو بسازیم</p>
+        <p className="text-sm text-gray-500 dark:text-night-muted dark:text-night-muted mt-2">بیا اولین مزرعه‌ات رو بسازیم</p>
       </div>
       {step === 1 ? (<>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">اسم مزرعه *</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted dark:text-night-muted mb-1 block">اسم مزرعه *</label>
           <input placeholder="مثلاً: مزرعه گندم شمالی" value={farmName} onChange={e => setFarmName(e.target.value)} className="input-glass text-right" autoFocus />
         </div>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">شهر / استان</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted dark:text-night-muted mb-1 block">شهر / استان</label>
           <input placeholder="مثلاً: ساوه، مرکزی" value={city} onChange={e => setCity(e.target.value)} className="input-glass text-right" />
         </div>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">مساحت (هکتار)</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted dark:text-night-muted mb-1 block">مساحت (هکتار)</label>
           <input type="tel" inputMode="decimal" placeholder="مثلاً: 3.5" value={area}
             onChange={e => setArea(onlyDigits(e.target.value.replace('.','')).length > 0 ? e.target.value.replace(/[^\d.]/g,'') : '')}
             className="input-glass text-right" />
         </div>
-        {error && <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
+        {error && <div className="text-xs text-red-500 dark:text-red-400 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
         <button onClick={() => setStep(2)} disabled={!farmName} className="btn-primary mb-3">ادامه</button>
         <button onClick={() => router.push('/dashboard')} className="btn-outline">بعداً می‌سازم</button>
       </>) : (<>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 mb-1 block">تاریخ کشت (شمسی)</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">تاریخ کشت (شمسی)</label>
           <div className="flex gap-2">
             <select value={cropYear} onChange={e => setCropYear(Number(e.target.value))} className="input-glass flex-1 text-center">
               <option value="0">سال</option>
@@ -88,20 +88,20 @@ export default function SetupPage() {
           </div>
         </div>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 mb-1 block">نوع خاک</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">نوع خاک</label>
           <select value={soilType} onChange={e => setSoilType(e.target.value)} className="input-glass text-right">
             <option value="">انتخاب کنید</option>
             <option value="رسی">رسی</option><option value="شنی">شنی</option><option value="لومی">لومی</option><option value="سیلتی">سیلتی</option><option value="مخلوط">مخلوط</option>
           </select>
         </div>
         <div className="card">
-          <label className="text-xs font-bold text-gray-600 mb-1 block">روش آبیاری</label>
+          <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">روش آبیاری</label>
           <select value={irrigationType} onChange={e => setIrrigationType(e.target.value)} className="input-glass text-right">
             <option value="">انتخاب کنید</option>
             <option value="DRIP">قطره‌ای</option><option value="SPRINKLER">بارانی</option><option value="SURFACE">سطحی</option><option value="SUBSURFACE">زیرزمینی</option>
           </select>
         </div>
-        {error && <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
+        {error && <div className="text-xs text-red-500 dark:text-red-400 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
         <div className="flex gap-2">
           <button onClick={() => setStep(1)} className="btn-outline flex-1">بازگشت</button>
           <button onClick={handleCreate} disabled={loading} className="btn-primary flex-1">{loading ? '⏳' : 'ساخت مزرعه'}</button>

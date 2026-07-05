@@ -18,14 +18,14 @@ export default function FarmsPage() {
       .catch(() => setLoading(false));
   }, [router]);
 
-  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted text-sm">⏳</p></div>;
+  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted dark:text-night-muted text-sm">⏳</p></div>;
 
   return (
     <>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs text-gray-500 dark:text-night-muted">مدیریت زمین‌ها</p>
-          <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">زمین‌های من</h1>
+          <p className="text-xs text-gray-500 dark:text-night-muted dark:text-night-muted dark:text-night-muted">مدیریت زمین‌ها</p>
+          <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text dark:text-night-text">زمین‌های من</h1>
         </div>
         <button onClick={() => router.push('/setup')} className="btn-primary !w-auto !py-2 !px-4 !text-xs">
           + زمین جدید
@@ -35,7 +35,7 @@ export default function FarmsPage() {
       {farms.length === 0 ? (
         <div className="text-center mt-12">
           <div className="text-4xl mb-3">🏞️</div>
-          <p className="text-sm text-gray-500 dark:text-night-muted mb-4">هنوز هیچ زمینی ثبت نکردی</p>
+          <p className="text-sm text-gray-500 dark:text-night-muted dark:text-night-muted dark:text-night-muted mb-4">هنوز هیچ زمینی ثبت نکردی</p>
           <button onClick={() => router.push('/setup')} className="btn-primary">+ ساخت اولین زمین</button>
         </div>
       ) : (
@@ -50,8 +50,8 @@ export default function FarmsPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🌾</span>
                   <div>
-                    <div className="text-sm font-bold text-gray-800">{farm.name}</div>
-                    {subtitle && <div className="text-[10px] text-gray-400">{subtitle}</div>}
+                    <div className="text-sm font-bold text-gray-800 dark:text-night-text">{farm.name}</div>
+                    {subtitle && <div className="text-[10px] text-gray-400 dark:text-night-muted">{subtitle}</div>}
                   </div>
                 </div>
                 <div className="text-right">
