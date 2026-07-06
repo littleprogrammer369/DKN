@@ -16,7 +16,7 @@ export class GeminiProvider extends BaseAiProvider {
   async chat(options: ChatOptions): Promise<ChatResult> {
     const start = Date.now();
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,6 +29,6 @@ export class GeminiProvider extends BaseAiProvider {
     );
     const data = await res.json();
     const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ پاسخی دریافت نشد';
-    return { content, model: 'gemini-1.5-flash', tokens: data?.usageMetadata?.totalTokenCount || 0, latencyMs: Date.now() - start };
+    return { content, model: 'gemini-2.0-flash', tokens: data?.usageMetadata?.totalTokenCount || 0, latencyMs: Date.now() - start };
   }
 }
