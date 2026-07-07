@@ -75,7 +75,7 @@ export default function AiChatPage() {
           <div className="msg-ai">
             <div className="avatar-ai">✦</div>
             <div className="bubble-ai">
-                {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}<div className="flex gap-1 py-1"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>
+                <div className="flex gap-1 py-1"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>
           </div>
         )}
         <div ref={chatEndRef}/>

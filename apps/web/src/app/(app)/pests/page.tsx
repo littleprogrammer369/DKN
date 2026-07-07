@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation';
 
 export default function PestsPage() {
   const router = useRouter();
-  const [hasFarm, setHasFarm] = useState(null);
-  const [weather, setWeather] = useState(null);
+  const [hasFarm, setHasFarm] = useState<any>(null);
+  const [weather, setWeather] = useState<any>(null);
   const [showReport, setShowReport] = useState(false);
-  const [reportData, setReportData] = useState({ product: '', pestType: '', severity: 'medium', notes: '', image: null });
-  const [reports, setReports] = useState([]);
+  const [reportData, setReportData] = useState({ product: '', pestType: '', severity: 'medium', notes: '', image: null as string | null });
+  const [reports, setReports] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -77,6 +79,35 @@ export default function PestsPage() {
             <option>Rust</option><option>Aphid</option><option>Powdery mildew</option><option>Other</option>
           </select>
           <textarea className="input-glass mb-2" placeholder="Notes..." value={reportData.notes} onChange={e => setReportData({...reportData, notes: e.target.value})} />
+          
+          {/* Image upload */}
+          <div className="mb-2">
+            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-night-muted cursor-pointer bg-gray-50 dark:bg-night-surface rounded-lg px-3 py-2 border border-dashed border-gray-300 dark:border-night-border">
+              <span>{imagePreview ? '✅' : '📷'}</span>
+              <span>{imagePreview ? 'عکس انتخاب شد' : 'آپلود عکس از آفت'}</span>
+              <input type="file" accept="image/*" className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      const dataUrl = ev.target?.result as string;
+                      setImagePreview(dataUrl);
+                      setReportData({...reportData, image: dataUrl});
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }} />
+            </label>
+            {imagePreview && (
+              <div className="relative mt-2">
+                <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
+                <button onClick={() => { setImagePreview(null); setReportData({...reportData, image: null}); }}
+                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">✕</button>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2">
             <button className="btn-primary flex-1" onClick={() => { setReports([{...reportData, date: new Date()} as never, ...reports]); setShowReport(false); }}>Submit</button>
             <button className="btn-outline" onClick={() => setShowReport(false)}>Cancel</button>

@@ -125,13 +125,17 @@ export default function IrrigationPage() {
 
         {!weather && (
           <p className="text-xs text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 py-2 rounded-lg mt-2">
-            ⚠️ داده هواشناسی فعال نیست. API Key را تنظیم کنید.
+            ⚠️ داده هواشناسی فعال نیست. 
+            <button onClick={() => {/* show API key modal */}} className="underline mr-1 font-bold">تنظیم API Key</button>
           </p>
         )}
       </div>
 
       {/* Add Irrigation Button */}
       <div className="flex gap-2 mb-4">
+        <button onClick={() => {/* open add irrigation modal */}} className="btn-primary flex-1 !text-xs">
+          ➕ ثبت آبیاری جدید
+        </button>
         <button onClick={() => router.push('/ai?q=irrigation')} className="btn-outline flex-1 !text-xs">
           🤖 از AI بپرس
         </button>

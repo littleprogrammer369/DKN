@@ -2,9 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
+
+import 'leaflet/dist/leaflet.css';
 
 interface Farm { id: string; name: string; product: string; city?: string; province?: string;
-  areaHa?: number; soilType?: string; irrigationType?: string; cropDate?: string; createdAt: string }
+  areaHa?: number; soilType?: string; irrigationType?: string; cropDate?: string; createdAt: string;
+  lat?: number; lng?: number; }
 
 export default function FarmDetailPage() {
   const params = useParams();
@@ -17,6 +26,15 @@ export default function FarmDetailPage() {
     if (!token) { router.push('/'); return; }
     fetch('/api/v1/farms/' + params.id, { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json()).then(d => { setFarm(d); setLoading(false); }).catch(() => setLoading(false));
+    // Fix Leaflet default icon
+    import('leaflet').then(L => {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
+    });
   }, [params.id, router]);
 
   if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted">⏳</p></div>;
@@ -46,12 +64,20 @@ export default function FarmDetailPage() {
       </div>
     </div>
 
-    <div className="card h-36 mb-4 flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-      <div className="text-center">
-        <span className="text-4xl block mb-1">🗺️</span>
-        <p className="text-xs text-gray-500 dark:text-night-muted">نقشه مزرعه — به زودی</p>
-        {farm.areaHa && <p className="text-[10px] text-gray-400 dark:text-night-muted mt-1">{farm.areaHa} هکتار</p>}
-      </div>
+    <div className="card h-48 mb-4 overflow-hidden p-0 relative">
+      <MapContainer center={[35.7, 51.4]} zoom={13} className="h-full w-full z-0" scrollWheelZoom={false}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.r.png"
+        />
+        {farm.lat && farm.lng && (
+          <Marker position={[farm.lat, farm.lng]}>
+            <Popup>{farm.name}{farm.areaHa ? ` - ${farm.areaHa} ha` : ''}</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+      <div className="absolute bottom-2 left-2 bg-white/80 dark:bg-night-card/80 text-[10px] px-2 py-1 rounded-lg z-[1000]">
+        {farm.city || ''}{farm.areaHa ? ` · ${farm.areaHa} ha` : ''}</div>
     </div>
 
     <div className="grid grid-cols-2 gap-3 mb-4">

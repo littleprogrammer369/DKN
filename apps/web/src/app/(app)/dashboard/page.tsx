@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [farms, setFarms] = useState([]);
-  const [weather, setWeather] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [farms, setFarms] = useState<any[]>([]);
+  const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <div className="card mb-4">
           <div className="text-xs font-bold mb-3">5-Day Forecast</div>
           <div className="flex gap-2 overflow-x-auto">
-            {forecast.slice(0,5).map((d,i) => (
+            {forecast.slice(0,5).map((d: any, i: number) => (
               <div key={i} className="flex-1 text-center bg-green-50/30 dark:bg-night-surface/30 rounded-xl py-2 min-w-[55px]">
                 <div className="text-[10px] text-gray-500">{new Date(d.date).toLocaleDateString('fa-IR', {weekday:'short'})}</div>
                 <div className="text-sm font-bold text-gray-800 dark:text-night-text mt-1">{d.tempMax ? Math.round(d.tempMax) : '--'}</div>
