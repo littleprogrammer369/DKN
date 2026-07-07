@@ -42,7 +42,7 @@ export default function AiChatPage() {
     setMessages(prev => [...prev, { role: 'ai', content: reply }]);
   };
 
-  const suggestions = ['آبیاری گندم', 'آفات رایج', 'کوددهی', 'زمان برداشت', 'پیش‌بینی وضعیت'];
+  const suggestions = ['آبیاری گندم', 'آفات رایج', 'کوددهی', 'پیش‌بینی وضعیت'];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">

@@ -130,6 +130,13 @@ export default function IrrigationPage() {
         )}
       </div>
 
+      {/* Add Irrigation Button */}
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => router.push('/ai?q=irrigation')} className="btn-outline flex-1 !text-xs">
+          🤖 از AI بپرس
+        </button>
+      </div>
+
       <div className="section-title dark:text-night-text/80">📋 تاریخچه آبیاری</div>
       <div className="card dark:bg-night-card/80 dark:border-night-border/60 transition-colors duration-300">
         {lastIrrigation ? (
