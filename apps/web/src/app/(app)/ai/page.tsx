@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-interface Message { role: 'user' | 'ai'; content: string }
+interface Message { role: 'user' | 'ai'; content: string; time?: Date }
 
 export default function AiChatPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -10,6 +10,8 @@ export default function AiChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
+  const [chatId, setChatId] = useState(Date.now());
+  const startNewChat = () => { setMessages([{ role: 'ai', content: 'Hello! I am your smart farm assistant. Ask me anything about farming! \ud83c\udf3e' }]); setChatId(Date.now()); };
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typing]);
@@ -35,11 +37,11 @@ export default function AiChatPage() {
     const q = input.trim();
     if (!q || typing) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: q }]);
+    setMessages(prev => [...prev, { role: 'user', content: q, time: new Date() }]);
     setTyping(true);
     const reply = await callAI(q);
     setTyping(false);
-    setMessages(prev => [...prev, { role: 'ai', content: reply }]);
+    setMessages(prev => [...prev, { role: 'ai', content: reply, time: new Date() }]);
   };
 
   const suggestions = ['آبیاری گندم', 'آفات رایج', 'کوددهی', 'پیش‌بینی وضعیت'];
@@ -57,11 +59,13 @@ export default function AiChatPage() {
             {msg.role === 'ai' ? (
               <>
                 <div className="avatar-ai">✦</div>
-                <div className="bubble-ai">{msg.content.split('\\n').map((line,j,a) => <span key={j}>{line}{j<a.length-1 && <br/>}</span>)}</div>
+                <div className="bubble-ai">
+                {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}{msg.content.split('\\n').map((line,j,a) => <span key={j}>{line}{j<a.length-1 && <br/>}</span>)}</div>
               </>
             ) : (
               <>
-                <div className="bubble-user">{msg.content}</div>
+                <div className="bubble-user">
+              {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-right">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}{msg.content}</div>
                 <div className="avatar-user">👤</div>
               </>
             )}
@@ -70,7 +74,8 @@ export default function AiChatPage() {
         {typing && (
           <div className="msg-ai">
             <div className="avatar-ai">✦</div>
-            <div className="bubble-ai"><div className="flex gap-1 py-1"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>
+            <div className="bubble-ai">
+                {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}<div className="flex gap-1 py-1"><div className="dot"/><div className="dot"/><div className="dot"/></div></div>
           </div>
         )}
         <div ref={chatEndRef}/>

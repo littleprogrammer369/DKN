@@ -49,7 +49,7 @@ export default function SetupPage() {
     <div className="flex flex-col px-1">
       <div className="text-center mb-6 mt-4">
         <div className="text-5xl mb-3">🌱</div>
-        <h1 className="text-xl font-extrabold text-gray-800 dark:text-night-text">{userName ? userName + ' عزیز،' : ''} به داده کشت نوین خوش آمدی!</h1>
+        <h1 className="text-xl font-extrabold text-gray-800 dark:text-night-text">{userName ? userName + ' جان،' : ''} به داده کشت نوین خوش آمدی!</h1>
         <p className="text-sm text-gray-500 dark:text-night-muted dark:text-night-muted mt-2">بیا اولین مزرعه‌ات رو بسازیم</p>
       </div>
       {step === 1 ? (<>

@@ -42,7 +42,7 @@ export default function FarmDetailPage() {
       <span className="text-3xl">🌾</span>
       <div>
         <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">{farm.name}</h1>
-        <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + farm.areaHa + ' هکتار' : ''}</p>
+        <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + String(farm.areaHa) + ' هکتار' : ''}</p>
       </div>
     </div>
 
@@ -61,6 +61,25 @@ export default function FarmDetailPage() {
       <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع خاک</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.soilType || '—'}</div></div>
     </div>
 
-    <div className="card"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ ثبت</div><div className="text-sm font-bold text-gray-700 mt-1">{toJalali(farm.createdAt)}</div></div>
+        <div className="card mb-4">
+      <div className="text-xs font-bold mb-3">Farm Metrics</div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
+          <div className="text-lg font-bold text-brand-green">{farm.areaHa || '--'}</div>
+          <div className="text-[9px] text-gray-500">Area (ha)</div>
+        </div>
+        <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
+          <div className="text-lg font-bold text-brand-green">{farm.product || 'Wheat'}</div>
+          <div className="text-[9px] text-gray-500">Product</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex gap-2 mb-4">
+      <button onClick={() => router.push('/irrigation')} className="btn-outline flex-1 !text-xs">Irrigation</button>
+      <button onClick={() => router.push('/pests')} className="btn-outline flex-1 !text-xs">Pests</button>
+      <button onClick={() => router.push('/ai')} className="btn-outline flex-1 !text-xs">AI Advice</button>
+    </div>
+<div className="card"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ ثبت</div><div className="text-sm font-bold text-gray-700 mt-1">{toJalali(farm.createdAt)}</div></div>
   </>);
 }
