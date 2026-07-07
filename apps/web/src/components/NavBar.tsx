@@ -8,6 +8,7 @@ const navItems = [
   { id: 'ai', label: 'دستیار', icon: '✦', path: '/ai' },
   { id: 'irrigation', label: 'آبیاری', icon: '💧', path: '/irrigation' },
   { id: 'pests', label: 'آفات', icon: '🔍', path: '/pests' },
+  { id: 'profile', label: 'پروفایل', icon: '👤', path: '/profile' },
 ];
 
 export default function NavBar() {

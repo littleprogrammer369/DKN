@@ -17,12 +17,19 @@ function ThemeToggleInline() {
 export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
   const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -9,6 +9,7 @@ export default function SetupPage() {
   const [userName, setUserName] = useState('');
   const [farmName, setFarmName] = useState('');
   const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
   const [area, setArea] = useState('');
   const [soilType, setSoilType] = useState('');
   const [irrigationType, setIrrigationType] = useState('');
