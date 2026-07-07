@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
+import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 function ThemeToggleInline() {
   const { theme, toggle } = useTheme();
@@ -122,13 +123,15 @@ export default function LoginPage() {
             <div className="flex mb-4 bg-gray-100 dark:bg-night-surface rounded-xl p-1">
               <button type="button"
                 onClick={() => { setAuthMethod('password'); setError(''); setFieldErrors({}); setOtpSent(false); setOtpCode(''); }}
-                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all ' + (authMethod === 'password' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
-                🔑 رمز عبور
+                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 ' + (authMethod === 'password' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
+                <Key size={14} />
+                رمز عبور
               </button>
               <button type="button"
                 onClick={() => { setAuthMethod('otp'); setError(''); setFieldErrors({}); }}
-                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all ' + (authMethod === 'otp' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
-                📱 کد تایید (OTP)
+                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 ' + (authMethod === 'otp' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
+                <Mail size={14} />
+                کد تایید (OTP)
               </button>
             </div>
           )}
@@ -148,11 +151,12 @@ export default function LoginPage() {
               </>
             )}
             <div className="relative mb-3">
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-600 dark:text-night-muted z-10">+98</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-600 dark:text-night-muted z-10">+98</span>
               <input type="tel" inputMode="numeric" maxLength={10} placeholder="9123456789" value={phone}
+                dir="ltr"
                 onChange={e => { setPhone(onlyDigits(e.target.value)); setError(''); setFieldErrors(f => ({...f, phone: ''})); }}
                 onBlur={e => { const err = validatePhone(e.target.value); setFieldErrors(f => ({...f, phone: err})); }}
-                className="input-glass dark:bg-night-card/60 dark:text-night-text text-center text-lg tracking-widest pr-10" />
+                className="input-glass dark:bg-night-card/60 dark:text-night-text text-center text-lg tracking-widest pl-10" />
             </div>
             {fieldErrors.phone && <p className="text-[10px] text-red-500 mb-2 mr-1 -mt-2">{fieldErrors.phone}</p>}
             {!isLogin && (
