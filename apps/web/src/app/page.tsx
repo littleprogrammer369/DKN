@@ -116,7 +116,7 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full max-w-sm glass dark:bg-night-card/80 dark:border-night-border/60 p-6 rounded-3xl">
-          <h2 className="text-lg font-bold text-gray-800 dark:text-night-text mb-1">{isLogin ? 'ورود' : 'ثبت\u200cنام'}</h2>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-night-text mb-1">{isLogin ? 'ورود' : 'ثبت‌نام'}</h2>
           <p className="text-xs text-gray-500 dark:text-night-muted mb-5">{isLogin ? 'برای ورود، شماره خود را وارد کنید' : 'برای شروع، اطلاعات خود را وارد کنید'}</p>
           {isLogin && (
             <div className="flex mb-4 bg-gray-100 dark:bg-night-surface rounded-xl p-1">
@@ -229,18 +229,18 @@ export default function LoginPage() {
             {error && <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
             {authMethod === 'password' && (
               <button type="submit" disabled={loading || !phone || !password || (!isLogin && (!firstName || password !== confirmPassword))} className="btn-primary disabled:opacity-40">
-                {loading ? '⏳ لطفاً صبر کنید...' : (isLogin ? '🔑 ورود' : '📝 ثبت\u200cنام')}
+                {loading ? '⏳ لطفاً صبر کنید...' : (isLogin ? '🔑 ورود' : '📝 ثبت‌نام')}
               </button>
             )}
           </form>
           <button onClick={() => { setIsLogin(!isLogin); setError(''); setFieldErrors({}); setOtpSent(false); setOtpCode(''); setAuthMethod('password'); }} className="btn-outline mt-3">
-            {isLogin ? '👤 حساب ندارید؟ ثبت\u200cنام کنید' : '🔑 حساب دارید؟ وارد شوید'}
+            {isLogin ? '👤 حساب ندارید؟ ثبت‌نام کنید' : '🔑 حساب دارید؟ وارد شوید'}
           </button>
-          <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="#" className="text-brand-green underline">قوانین</a> را می\u200cپذیرید</p>
+          <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="#" className="text-brand-green underline">قوانین</a> را می‌پذیرید</p>
         </div>
         <p className="text-[10px] text-gray-400 dark:text-night-muted/60 text-center mt-8 max-w-xs leading-relaxed">
-          با ثبت\u200cنام، از <a href="#" className="text-brand-green">شرایط استفاده</a> و{' '}
-          <a href="#" className="text-brand-green">حریم خصوصی</a> مطلع شده\u200cاید.
+          با ثبت‌نام، از <a href="#" className="text-brand-green">شرایط استفاده</a> و{' '}
+          <a href="#" className="text-brand-green">حریم خصوصی</a> مطلع شده‌اید.
         </p>
       </div>
     </ThemeProvider>
