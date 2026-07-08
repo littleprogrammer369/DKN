@@ -79,6 +79,17 @@ export default function PestsPage() {
             <option value="">انتخاب نوع آفت</option>
             <option>زنگ</option><option>شته</option><option>سفیدک</option><option>سایر</option>
           </select>
+          <div className="mb-2">
+            <label className="text-xs text-gray-500 dark:text-night-muted mb-1 block">شدت آفت</label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[{v:'low',l:'کم',c:'bg-green-500'},{v:'medium',l:'متوسط',c:'bg-amber-500'},{v:'high',l:'شدید',c:'bg-orange-500'},{v:'critical',l:'بحرانی',c:'bg-red-500'}].map(lv => (
+                <button key={lv.v} type="button" onClick={() => setReportData({...reportData, severity: lv.v})}
+                  className={`p-2 rounded-xl border-2 text-xs transition-all ${reportData.severity === lv.v ? 'border-brand-green bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-night-border'}`}>
+                  <span className={`inline-block w-2 h-2 rounded-full ${lv.c} mb-0.5`} /> {lv.l}
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea className="input-glass mb-2" placeholder="یادداشت..." value={reportData.notes} onChange={e => setReportData({...reportData, notes: e.target.value})} />
           
           {/* Image upload */}

@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, MessageSquare, User, Bot, Loader2 } from 'lucide-react';
+import { Send, Sparkles, User, Bot, Loader2, Copy, Check, Plus, History } from 'lucide-react';
+import { ChatInput } from '@/components/ChatInput';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message { role: 'user' | 'ai'; content: string; time?: Date }
 
@@ -60,8 +63,12 @@ export default function AiChatPage() {
             {msg.role === 'ai' ? (
               <>
                 <div className="avatar-ai"><Bot size={16} /></div>
-                <div className="bubble-ai">
-                {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}{msg.content.split('\\n').map((line,j,a) => <span key={j}>{line}{j<a.length-1 && <br/>}</span>)}</div>
+                <div className="bubble-ai text-sm leading-relaxed">
+                  {msg.time && <div className="text-[9px] text-gray-400 mb-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{p:({children})=><p className="mb-1 last:mb-0">{children}</p>,strong:({children})=><strong className="font-bold">{children}</strong>,ul:({children})=><ul className="list-disc list-inside my-1">{children}</ul>,ol:({children})=><ol className="list-decimal list-inside my-1">{children}</ol>,li:({children})=><li>{children}</li>,code:({children})=><code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">{children}</code>}}>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               </>
             ) : (
               <>
