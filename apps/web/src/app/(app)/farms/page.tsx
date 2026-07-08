@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Wheat, Sprout, TreePine, Pencil, Trash2, MoreVertical, Plus,
+  Check, AlertTriangle
 } from 'lucide-react';
 
 /* ── Types ── */
@@ -57,7 +58,7 @@ function StatCard({
   value,
   color = 'text-green-600 dark:text-green-400',
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: string;
   color?: string;
@@ -79,9 +80,9 @@ function FarmsStats({ farms }: { farms: Farm[] }) {
 
   return (
     <div className="grid grid-cols-3 gap-3 mb-4">
-      <StatCard icon="🌾" label="کل" value={toPersianNum(total)} />
-      <StatCard icon="✅" label="سالم" value={toPersianNum(healthy)} color="text-green-600 dark:text-green-400" />
-      <StatCard icon="⚠️" label="نیاز به توجه" value={toPersianNum(attention)} color="text-amber-600 dark:text-amber-400" />
+      <StatCard icon={<Sprout size={16} />} label="کل" value={toPersianNum(total)} />
+      <StatCard icon={<Check size={16} />} label="سالم" value={toPersianNum(healthy)} color="text-green-600 dark:text-green-400" />
+      <StatCard icon={<AlertTriangle size={16} />} label="نیاز به توجه" value={toPersianNum(attention)} color="text-amber-600 dark:text-amber-400" />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, User, Bot, Loader2, Copy, Check, Plus, History } from 'lucide-react';
+import { Send, Sparkles, User, Bot, Loader2, Copy, Check, Plus, History, AlertTriangle, Sprout } from 'lucide-react';
 import { ChatInput } from '@/components/ChatInput';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,7 +10,7 @@ interface Message { role: 'user' | 'ai'; content: string; time?: Date }
 
 export default function AiChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: 'سلام! من دستیار هوشمند مزرعه شما هستم. هر سوالی درباره کشاورزی داری بپرس. 🌾' },
+    { role: 'ai', content: 'سلام! من دستیار هوشمند مزرعه شما هستم. هر سوالی درباره کشاورزی داری بپرس.' },
   ]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);

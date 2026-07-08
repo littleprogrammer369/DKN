@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind } from 'lucide-react';
+import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind, Thermometer, AlertTriangle } from 'lucide-react';
 
 export default function IrrigationPage() {
   const router = useRouter();
@@ -91,7 +91,7 @@ export default function IrrigationPage() {
           <div className="grid grid-cols-3 gap-2 mt-3 text-center">
             <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
               <div className="text-lg font-extrabold text-brand-green">{weather.temperature ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted">🌡️ دما</div>
+              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Thermometer size={12} className="inline ml-1" /> دما</div>
             </div>
             <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
               <div className="text-lg font-extrabold text-brand-green">{weather.humidity ?? '--'}</div>
@@ -126,7 +126,7 @@ export default function IrrigationPage() {
 
         {!weather && (
           <p className="text-xs text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 py-2 rounded-lg mt-2">
-            ⚠️ داده هواشناسی فعال نیست. 
+            <AlertTriangle size={14} className="inline mr-1" /> داده هواشناسی فعال نیست. 
             <button onClick={() => {/* show API key modal */}} className="underline mr-1 font-bold">تنظیم API Key</button>
           </p>
         )}

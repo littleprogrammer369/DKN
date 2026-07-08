@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sprout } from 'lucide-react';
 
 function ThemeToggleInline() {
   const { theme, toggle } = useTheme();
@@ -112,7 +112,7 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center"
                style={{ background: 'linear-gradient(135deg, #2BB673, #22C55E)', boxShadow: '0 8px 32px rgba(43,182,115,0.25)' }}>
-            <span className="text-white text-4xl">🌿</span>
+            <Sprout className="text-white" size={36} />
           </div>
           <h1 className="text-2xl font-extrabold text-gray-800 dark:text-night-text">داده کشت نوین</h1>
           <p className="text-sm text-gray-500 dark:text-night-muted mt-1">هوش مصنوعی در خدمت کشاورزی</p>
