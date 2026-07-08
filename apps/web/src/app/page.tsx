@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
@@ -120,19 +122,31 @@ export default function LoginPage() {
           <h2 className="text-lg font-bold text-gray-800 dark:text-night-text mb-1">{isLogin ? 'ورود' : 'ثبت‌نام'}</h2>
           <p className="text-xs text-gray-500 dark:text-night-muted mb-5">{isLogin ? 'برای ورود، شماره خود را وارد کنید' : 'برای شروع، اطلاعات خود را وارد کنید'}</p>
           {isLogin && (
-            <div className="flex mb-4 bg-gray-100 dark:bg-night-surface rounded-xl p-1">
-              <button type="button"
-                onClick={() => { setAuthMethod('password'); setError(''); setFieldErrors({}); setOtpSent(false); setOtpCode(''); }}
-                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 ' + (authMethod === 'password' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
-                <Key size={14} />
-                رمز عبور
-              </button>
-              <button type="button"
-                onClick={() => { setAuthMethod('otp'); setError(''); setFieldErrors({}); }}
-                className={'flex-1 text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 ' + (authMethod === 'otp' ? 'bg-white dark:bg-night-card shadow-sm text-brand-green' : 'text-gray-500 dark:text-night-muted')}>
-                <Mail size={14} />
-                کد تایید (OTP)
-              </button>
+            <div className="relative flex mb-4 bg-gray-100 dark:bg-night-surface rounded-full p-1 border border-gray-200 dark:border-night-border">
+              {(['password', 'otp'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => { setAuthMethod(tab); setError(''); setFieldErrors({}); setOtpSent(false); setOtpCode(''); }}
+                  className={`relative z-10 flex-1 py-2 rounded-full text-xs font-bold transition-colors duration-200 flex items-center justify-center gap-1.5 ${
+                    authMethod === tab
+                      ? 'text-white'
+                      : 'text-gray-500 dark:text-night-muted'
+                  }`}
+                >
+                  {authMethod === tab && (
+                    <motion.div
+                      layoutId="tab-indicator"
+                      className="absolute inset-0 bg-brand-green rounded-full"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1">
+                    {tab === 'password' ? <Key size={14} /> : <Mail size={14} />}
+                    {tab === 'password' ? 'رمز عبور' : 'کد تایید'}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
           <form onSubmit={authMethod === 'otp' && isLogin ? (e) => { e.preventDefault(); otpSent ? handleVerifyOtp() : handleSendOtp(); } : handleSubmit}>
@@ -200,7 +214,17 @@ export default function LoginPage() {
               <div className="mb-4">
                 {!otpSent ? (
                   <button type="submit" disabled={loading || !phone} className="btn-primary disabled:opacity-40 w-full">
-                    {loading ? '⏳ در حال ارسال...' : '📨 ارسال کد تایید'}
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="animate-spin" size={16} />
+                        در حال ارسال...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <Mail size={16} />
+                        ارسال کد تایید
+                      </span>
+                    )}
                   </button>
                 ) : (
                   <>
@@ -217,34 +241,87 @@ export default function LoginPage() {
                           }}
                           onKeyDown={e => { if (e.key === 'Backspace' && !otpCode[i] && i > 0) focusOtpInput(i-1); }}
                           id={'otp-' + i}
-                          className="w-12 h-12 text-center text-lg font-bold rounded-xl border-2 border-gray-200 dark:border-night-border bg-white dark:bg-night-card focus:border-brand-green outline-none" />
+                          className="w-14 h-14 text-center text-xl font-bold rounded-2xl border-2 border-gray-200 dark:border-night-border bg-white dark:bg-night-card focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 outline-none transition-all" />
                       ))}
                     </div>
                     <button type="submit" disabled={loading || otpCode.length !== 5} className="btn-primary disabled:opacity-40 w-full">
-                      {loading ? '⏳ در حال ورود...' : '✅ تأیید و ورود'}
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="animate-spin" size={18} />
+                          در حال ورود...
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <CheckCircle2 size={18} />
+                          تأیید و ورود
+                        </span>
+                      )}
                     </button>
                     <button type="button" onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }} className="btn-outline mt-2 w-full !text-xs">
-                      🔄 تغییر شماره
+                      <span className="flex items-center justify-center gap-1">
+                        <ArrowLeft size={14} />
+                        تغییر شماره
+                      </span>
                     </button>
                   </>
                 )}
               </div>
             )}
-            {error && <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">{error}</div>}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-3 flex items-start gap-2">
+                <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={18} />
+                <div className="flex-1">
+                  <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+                  <button onClick={() => setError('')} className="text-xs text-red-600 dark:text-red-400 underline mt-1 hover:text-red-800 dark:hover:text-red-200 transition-colors">
+                    بستن
+                  </button>
+                </div>
+              </div>
+            )}
             {authMethod === 'password' && (
               <button type="submit" disabled={loading || !phone || !password || (!isLogin && (!firstName || password !== confirmPassword))} className="btn-primary disabled:opacity-40">
-                {loading ? '⏳ لطفاً صبر کنید...' : (isLogin ? '🔑 ورود' : '📝 ثبت‌نام')}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    لطفاً صبر کنید...
+                  </span>
+                ) : isLogin ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <ArrowLeft size={18} />
+                    ورود
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <UserPlus size={18} />
+                    ثبت‌نام
+                  </span>
+                )}
               </button>
+            )}
+            {authMethod === 'password' && isLogin && (
+              <Link href="/forgot-password" className="text-xs text-gray-500 dark:text-night-muted hover:text-primary text-center block mt-2 transition-colors">
+                رمز عبور خود را فراموش کردید؟
+              </Link>
             )}
           </form>
           <button onClick={() => { setIsLogin(!isLogin); setError(''); setFieldErrors({}); setOtpSent(false); setOtpCode(''); setAuthMethod('password'); }} className="btn-outline mt-3">
-            {isLogin ? '👤 حساب ندارید؟ ثبت‌نام کنید' : '🔑 حساب دارید؟ وارد شوید'}
+            {isLogin ? (
+              <span className="flex items-center justify-center gap-1.5">
+                <UserPlus size={16} />
+                حساب ندارید؟ ثبت‌نام کنید
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                <Lock size={16} />
+                حساب دارید؟ وارد شوید
+              </span>
+            )}
           </button>
           <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="#" className="text-brand-green underline">قوانین</a> را می‌پذیرید</p>
         </div>
-        <p className="text-[10px] text-gray-400 dark:text-night-muted/60 text-center mt-8 max-w-xs leading-relaxed">
-          با ثبت‌نام، از <a href="#" className="text-brand-green">شرایط استفاده</a> و{' '}
-          <a href="#" className="text-brand-green">حریم خصوصی</a> مطلع شده‌اید.
+        <p className="text-xs text-gray-500 dark:text-night-muted/70 text-center mt-8 max-w-xs leading-relaxed">
+          با استفاده از فناوری <span className="font-semibold text-gray-700 dark:text-night-text">هوش مصنوعی</span> و{' '}
+          <span className="font-semibold text-gray-700 dark:text-night-text">تصاویر ماهواره‌ای</span>، کشاورزی مطمئن داشته باشید.
         </p>
       </div>
     </ThemeProvider>

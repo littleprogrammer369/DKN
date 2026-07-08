@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind } from 'lucide-react';
 
 export default function IrrigationPage() {
   const router = useRouter();
@@ -55,13 +56,13 @@ export default function IrrigationPage() {
   return (
     <>
       <div className="mb-4">
-        <p className="text-xs text-gray-500 dark:text-night-muted">مدیریت هوشمند آب</p>
+        <p className="text-xs text-gray-500 dark:text-night-muted">مدیریت هوشمند آبیاری</p>
         <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">توصیه آبیاری</h1>
       </div>
 
       <div className="card dark:bg-night-card/80 dark:border-night-border/60 mb-4 transition-colors duration-300">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-3xl">💧</span>
+          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Droplet className="text-blue-600" size={22} /></div>
           <div>
             <div className="text-sm font-bold text-gray-800 dark:text-night-text">{farm.name}</div>
             <div className="text-xs text-gray-500 dark:text-night-muted">
@@ -94,18 +95,18 @@ export default function IrrigationPage() {
             </div>
             <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
               <div className="text-lg font-extrabold text-brand-green">{weather.humidity ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted">💧 رطوبت</div>
+              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Droplet size={12} className="inline ml-1" /> رطوبت</div>
             </div>
             <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
               <div className="text-lg font-extrabold text-brand-green">{weather.windSpeed ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted">🌬️ باد</div>
+              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Wind size={12} className="inline ml-1" /> باد</div>
             </div>
           </div>
         )}
 
         {forecast.length > 0 && (
           <div className="mt-3">
-            <div className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2">📅 پیش‌بینی ۵ روزه</div>
+            <div className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2"><Calendar size={14} className="inline ml-1" />پیش‌بینی ۵ روزه</div>
             <div className="flex gap-1 overflow-x-auto pb-1">
               {forecast.slice(0, 5).map((d: any, i: number) => (
                 <div key={i} className="flex-1 text-center bg-white/40 dark:bg-night-surface/40 rounded-lg p-1.5 min-w-[55px]">
@@ -116,7 +117,7 @@ export default function IrrigationPage() {
                     {d.tempMax ? Math.round(d.tempMax) : '--'}°
                   </div>
                   <div className="text-[9px] text-gray-400 dark:text-night-muted">{d.tempMin ? Math.round(d.tempMin) : '--'}°</div>
-                  {d.dayPrecipitation != null && <div className="text-[9px] text-blue-500 dark:text-blue-400 mt-0.5">🌧️ {d.dayPrecipitation}%</div>}
+                  {d.dayPrecipitation != null && <div className="text-[9px] text-blue-500 dark:text-blue-400 mt-0.5"><CloudRain size={10} className="inline" /> {d.dayPrecipitation > 100 ? '۰٪' : d.dayPrecipitation + '%'}</div>}
                 </div>
               ))}
             </div>

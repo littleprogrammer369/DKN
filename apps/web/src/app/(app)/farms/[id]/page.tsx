@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pencil } from 'lucide-react';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
@@ -54,10 +55,10 @@ export default function FarmDetailPage() {
   };
 
   return (<>
-    <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted dark:text-night-muted mb-3"><span>❮</span> بازگشت</button>
+    <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-3"><ArrowRight size={16} /> بازگشت</button>
 
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-3xl">🌾</span>
+      <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center"><Sprout className="text-green-600" size={22} /></div>
       <div>
         <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">{farm.name}</h1>
         <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + String(farm.areaHa) + ' هکتار' : ''}</p>
@@ -88,23 +89,23 @@ export default function FarmDetailPage() {
     </div>
 
         <div className="card mb-4">
-      <div className="text-xs font-bold mb-3">Farm Metrics</div>
+      <div className="text-xs font-bold mb-3">معیارهای مزرعه</div>
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
           <div className="text-lg font-bold text-brand-green">{farm.areaHa || '--'}</div>
-          <div className="text-[9px] text-gray-500">Area (ha)</div>
+          <div className="text-[9px] text-gray-500">مساحت (هکتار)</div>
         </div>
         <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
-          <div className="text-lg font-bold text-brand-green">{farm.product || 'Wheat'}</div>
-          <div className="text-[9px] text-gray-500">Product</div>
+          <div className="text-lg font-bold text-brand-green">{farm.product || 'گندم'}</div>
+          <div className="text-[9px] text-gray-500">محصول</div>
         </div>
       </div>
     </div>
 
     <div className="flex gap-2 mb-4">
-      <button onClick={() => router.push('/irrigation')} className="btn-outline flex-1 !text-xs">Irrigation</button>
-      <button onClick={() => router.push('/pests')} className="btn-outline flex-1 !text-xs">Pests</button>
-      <button onClick={() => router.push('/ai')} className="btn-outline flex-1 !text-xs">AI Advice</button>
+      <button onClick={() => router.push('/irrigation')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Droplet size={14} /> آبیاری</button>
+      <button onClick={() => router.push('/pests')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Bug size={14} /> آفات</button>
+      <button onClick={() => router.push('/ai')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Sparkles size={14} /> مشاوره AI</button>
     </div>
 <div className="card"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ ثبت</div><div className="text-sm font-bold text-gray-700 mt-1">{toJalali(farm.createdAt)}</div></div>
   </>);

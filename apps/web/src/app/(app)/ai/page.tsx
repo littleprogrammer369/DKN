@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Send, Sparkles, MessageSquare, User, Bot, Loader2 } from 'lucide-react';
 
 interface Message { role: 'user' | 'ai'; content: string; time?: Date }
 
@@ -58,7 +59,7 @@ export default function AiChatPage() {
           <div key={i} className={msg.role === 'ai' ? 'msg-ai' : 'msg-user'}>
             {msg.role === 'ai' ? (
               <>
-                <div className="avatar-ai">✦</div>
+                <div className="avatar-ai"><Bot size={16} /></div>
                 <div className="bubble-ai">
                 {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-left">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}{msg.content.split('\\n').map((line,j,a) => <span key={j}>{line}{j<a.length-1 && <br/>}</span>)}</div>
               </>
@@ -66,7 +67,7 @@ export default function AiChatPage() {
               <>
                 <div className="bubble-user">
               {msg.time && <div className="text-[9px] text-gray-400 mt-1 text-right">{new Date(msg.time).toLocaleTimeString('fa-IR', {hour:'2-digit',minute:'2-digit'})}</div>}{msg.content}</div>
-                <div className="avatar-user">👤</div>
+                <div className="avatar-user"><User size={16} /></div>
               </>
             )}
           </div>
@@ -93,7 +94,7 @@ export default function AiChatPage() {
           placeholder="سوال خود را بپرسید..." className="input-glass flex-1"/>
         <button onClick={handleSend} disabled={!input.trim() || typing}
           className="w-12 h-12 rounded-xl flex items-center justify-center text-white disabled:opacity-40"
-          style={{ background: 'linear-gradient(135deg, #2BB673, #22C55E)' }}>➤</button>
+          style={{ background: 'linear-gradient(135deg, #2BB673, #22C55E)' }}><Send size={18} /></button>
       </div>
     </div>
   );

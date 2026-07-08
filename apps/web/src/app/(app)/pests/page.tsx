@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Bug, Shield, Upload, Sparkles, AlertTriangle, Camera, Plus } from 'lucide-react';
 
 export default function PestsPage() {
   const router = useRouter();
@@ -47,21 +48,21 @@ export default function PestsPage() {
   return (
     <>
       <div className="mb-4">
-        <p className="text-xs text-gray-500 dark:text-night-muted">Pest Monitoring</p>
-        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">Pests & Diseases</h1>
+        <p className="text-xs text-gray-500 dark:text-night-muted">پایش هوشمند</p>
+        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">آفات و بیماری‌ها</h1>
       </div>
 
       {/* Risk Card */}
       <div className="card dark:bg-night-card/80 mb-4">
-        <div className="text-sm font-bold mb-3">Risk Status</div>
+        <div className="text-sm font-bold mb-3">وضعیت ریسک</div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs">Heat stress risk</span>
-            <span className={"text-xs font-bold px-2 py-0.5 rounded " + (tempRisk === 'high' ? 'bg-red-100 text-red-600' : tempRisk === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600')}>{tempRisk === 'high' ? 'HIGH' : tempRisk === 'medium' ? 'MEDIUM' : 'LOW'}</span>
+            <span className="text-xs">ریسک تنش گرمایی</span>
+            <span className={"text-xs font-bold px-2 py-0.5 rounded " + (tempRisk === 'high' ? 'bg-red-100 text-red-600' : tempRisk === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600')}>{tempRisk === 'high' ? 'بالا' : tempRisk === 'medium' ? 'متوسط' : 'پایین'}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs">Fungal risk (humidity)</span>
-            <span className={"text-xs font-bold px-2 py-0.5 rounded " + (humidityRisk === 'high' ? 'bg-red-100 text-red-600' : humidityRisk === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600')}>{humidityRisk === 'high' ? 'HIGH' : humidityRisk === 'medium' ? 'MEDIUM' : 'LOW'}</span>
+            <span className="text-xs">ریسک قارچی (رطوبت)</span>
+            <span className={"text-xs font-bold px-2 py-0.5 rounded " + (humidityRisk === 'high' ? 'bg-red-100 text-red-600' : humidityRisk === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600')}>{humidityRisk === 'high' ? 'بالا' : humidityRisk === 'medium' ? 'متوسط' : 'پایین'}</span>
           </div>
         </div>
       </div>
@@ -69,16 +70,16 @@ export default function PestsPage() {
       {/* Report Form */}
       {showReport && (
         <div className="card mb-4">
-          <div className="text-sm font-bold mb-3">New Report</div>
+          <div className="text-sm font-bold mb-3">گزارش جدید</div>
           <select className="input-glass mb-2" value={reportData.product} onChange={e => setReportData({...reportData, product: e.target.value})}>
-            <option value="">Select product</option>
-            <option>Wheat</option><option>Barley</option><option>Corn</option><option>Pistachio</option>
+            <option value="">انتخاب محصول</option>
+            <option>گندم</option><option>جو</option><option>ذرت</option><option>پسته</option>
           </select>
           <select className="input-glass mb-2" value={reportData.pestType} onChange={e => setReportData({...reportData, pestType: e.target.value})}>
-            <option value="">Select pest type</option>
-            <option>Rust</option><option>Aphid</option><option>Powdery mildew</option><option>Other</option>
+            <option value="">انتخاب نوع آفت</option>
+            <option>زنگ</option><option>شته</option><option>سفیدک</option><option>سایر</option>
           </select>
-          <textarea className="input-glass mb-2" placeholder="Notes..." value={reportData.notes} onChange={e => setReportData({...reportData, notes: e.target.value})} />
+          <textarea className="input-glass mb-2" placeholder="یادداشت..." value={reportData.notes} onChange={e => setReportData({...reportData, notes: e.target.value})} />
           
           {/* Image upload */}
           <div className="mb-2">
@@ -109,24 +110,24 @@ export default function PestsPage() {
           </div>
 
           <div className="flex gap-2">
-            <button className="btn-primary flex-1" onClick={() => { setReports([{...reportData, date: new Date()} as never, ...reports]); setShowReport(false); }}>Submit</button>
-            <button className="btn-outline" onClick={() => setShowReport(false)}>Cancel</button>
+            <button className="btn-primary flex-1" onClick={() => { setReports([{...reportData, date: new Date()} as never, ...reports]); setShowReport(false); }}>ثبت</button>
+            <button className="btn-outline" onClick={() => setShowReport(false)}>انصراف</button>
           </div>
         </div>
       )}
 
       {/* My Reports */}
-      <div className="section-title">My Reports</div>
+      <div className="section-title">گزارش‌های من</div>
       <div className="card">
         {reports.length > 0 ? reports.map((r, i) => (
           <div key={i} className="text-xs py-2 border-b last:border-0">{r.product} - {r.pestType}</div>
         )) : (
-          <p className="text-xs text-gray-400 text-center py-4">No reports yet</p>
+          <p className="text-xs text-gray-400 text-center py-4">هنوز گزارشی ثبت نشده</p>
         )}
       </div>
 
-      <button onClick={() => setShowReport(true)} className="btn-primary mt-3">
-        + New Report
+      <button onClick={() => setShowReport(true)} className="btn-primary mt-3 flex items-center justify-center gap-1">
+        <Plus size={16} /> گزارش جدید
       </button>
     </>
   );
