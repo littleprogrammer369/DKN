@@ -61,7 +61,7 @@ export default function ProfilePage() {
         <h3 className="text-sm font-medium text-gray-500 dark:text-night-muted mb-3">تنظیمات</h3>
         <button onClick={toggleTheme} className="w-full flex items-center justify-between py-2">
           <div className="flex items-center gap-2">{theme === 'day' ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-blue-400" />}<span className="text-sm text-gray-700 dark:text-night-text">تم {theme === 'day' ? 'روز' : 'شب'}</span></div>
-          <span className="text-xs text-gray-400">{theme === 'day' ? '☀️' : '🌙'}</span>
+          <span className="text-xs text-gray-400">{theme === 'day' ? <Sun size={14} className='text-amber-500' /> : <Moon size={14} className='text-blue-400' />}</span>
         </button>
       </div>
 

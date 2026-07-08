@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from '@/lib/theme';
+import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme();
@@ -13,7 +14,7 @@ export default function ThemeToggle() {
       title={theme === 'day' ? 'حالت شب' : 'حالت روز'}
     >
       <span className="animate-theme-swirl inline-block">
-        {theme === 'day' ? '🌙' : '☀️'}
+        {theme === 'day' ? <Moon size={16} /> : <Sun size={16} />}
       </span>
     </button>
   );

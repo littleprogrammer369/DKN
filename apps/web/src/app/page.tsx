@@ -6,13 +6,13 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sprout } from 'lucide-react';
+import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sprout, Sun, Moon } from 'lucide-react';
 
 function ThemeToggleInline() {
   const { theme, toggle } = useTheme();
   return (
     <button onClick={toggle} className="absolute top-4 left-4 w-10 h-10 rounded-full glass dark:bg-night-card/80 dark:border-night-border/60 flex items-center justify-center text-lg z-20 transition-all hover:scale-110" aria-label="toggle theme">
-      <span>{theme === 'day' ? '🌙' : '☀️'}</span>
+      <span>{theme === 'day' ? <Moon size={14} /> : <Sun size={14} />}</span>
     </button>
   );
 }

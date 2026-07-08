@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bug, Shield, Upload, Sparkles, AlertTriangle, Camera, Plus } from 'lucide-react';
+import { Bug, Shield, Upload, Sparkles, AlertTriangle, Camera, Plus, CheckCircle2, X } from 'lucide-react';
 
 export default function PestsPage() {
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function PestsPage() {
           {/* Image upload */}
           <div className="mb-2">
             <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-night-muted cursor-pointer bg-gray-50 dark:bg-night-surface rounded-lg px-3 py-2 border border-dashed border-gray-300 dark:border-night-border">
-              <span>{imagePreview ? '✅' : '📷'}</span>
+              <span>{imagePreview ? <CheckCircle2 size={14} className='text-green-500' /> : <Camera size={14} />}</span>
               <span>{imagePreview ? 'عکس انتخاب شد' : 'آپلود عکس از آفت'}</span>
               <input type="file" accept="image/*" className="hidden"
                 onChange={e => {
@@ -115,7 +115,7 @@ export default function PestsPage() {
               <div className="relative mt-2">
                 <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
                 <button onClick={() => { setImagePreview(null); setReportData({...reportData, image: null}); }}
-                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">✕</button>
+                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"><X size={12} /></button>
               </div>
             )}
           </div>

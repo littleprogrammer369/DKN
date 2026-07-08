@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind, Thermometer, AlertTriangle } from 'lucide-react';
+import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind, Thermometer, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function IrrigationPage() {
   const router = useRouter();
@@ -31,11 +31,11 @@ export default function IrrigationPage() {
       }).catch(() => setLoading(false));
   }, [router]);
 
-  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted text-sm">⏳</p></div>;
+  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted text-sm"><Loader2 className="animate-spin" size={16} /></p></div>;
 
   if (farms.length === 0) return (
     <div className="text-center mt-12">
-      <div className="text-4xl mb-3">💧</div>
+      <div className="text-4xl mb-3"><Droplet className="text-blue-500 mx-auto mb-3" size={40} /></div>
       <p className="text-sm text-gray-500 dark:text-night-muted mb-4">ابتدا یک مزرعه ثبت کنید</p>
       <button onClick={() => router.push('/setup')} className="btn-primary">ساخت مزرعه</button>
     </div>
@@ -135,10 +135,10 @@ export default function IrrigationPage() {
       {/* Add Irrigation Button */}
       <div className="flex gap-2 mb-4">
         <button onClick={() => {/* open add irrigation modal */}} className="btn-primary flex-1 !text-xs">
-          ➕ ثبت آبیاری جدید
+          <Plus size={14} className="inline ml-1" /> ثبت آبیاری جدید
         </button>
         <button onClick={() => router.push('/ai?q=irrigation')} className="btn-outline flex-1 !text-xs">
-          🤖 از AI بپرس
+          <Sparkles size={14} className="inline ml-1" /> از AI بپرس
         </button>
       </div>
 

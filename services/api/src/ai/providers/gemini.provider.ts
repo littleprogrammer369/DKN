@@ -28,7 +28,7 @@ export class GeminiProvider extends BaseAiProvider {
       }
     );
     const data = await res.json();
-    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ پاسخی دریافت نشد';
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'پاسخی دریافت نشد';
     return { content, model: 'gemini-2.0-flash', tokens: data?.usageMetadata?.totalTokenCount || 0, latencyMs: Date.now() - start };
   }
 }

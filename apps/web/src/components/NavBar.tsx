@@ -6,9 +6,9 @@ const navItems = [
   { id: 'dashboard', label: 'داشبورد', icon: '◉', path: '/dashboard' },
   { id: 'farms', label: 'زمین‌ها', icon: '⬡', path: '/farms' },
   { id: 'ai', label: 'دستیار', icon: '✦', path: '/ai' },
-  { id: 'irrigation', label: 'آبیاری', icon: '💧', path: '/irrigation' },
+  { id: 'irrigation', label: 'آبیاری', icon: 'Droplet', path: '/irrigation' },
   { id: 'pests', label: 'آفات', icon: '🔍', path: '/pests' },
-  { id: 'profile', label: 'پروفایل', icon: '👤', path: '/profile' },
+  { id: 'profile', label: 'پروفایل', icon: 'User', path: '/profile' },
 ];
 
 export default function NavBar() {

@@ -33,7 +33,7 @@ export default function AiChatPage() {
       // برای backward compatibility با سرور جدید
       return d.response || d.reply || d.message || 'پاسخی دریافت نشد';
     } catch {
-      return '⚠️ در حال حاضر دستیار هوشمند در دسترس نیست. لطفاً دوباره تلاش کنید.';
+      return '<AlertTriangle size={14} className="inline" /> در حال حاضر دستیار هوشمند در دسترس نیست. لطفاً دوباره تلاش کنید.';
     }
   };
 

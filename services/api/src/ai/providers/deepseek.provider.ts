@@ -29,7 +29,7 @@ export class DeepSeekProvider extends BaseAiProvider {
       }),
     });
     const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content || '⚠️ پاسخی دریافت نشد';
+    const content = data?.choices?.[0]?.message?.content || 'پاسخی دریافت نشد';
     return { content, model: 'deepseek-chat', tokens: data?.usage?.total_tokens || 0, latencyMs: Date.now() - start };
   }
 }
