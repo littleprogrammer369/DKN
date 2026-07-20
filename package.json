@@ -2,6 +2,7 @@
   "name": "dadeh-kesht-novin",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.34.4",
   "description": "داده کشت نوین - هوش مصنوعی در خدمت کشاورزی",
   "scripts": {
     "dev": "pnpm --parallel -r run dev",
