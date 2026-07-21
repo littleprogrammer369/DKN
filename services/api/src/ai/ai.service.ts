@@ -63,6 +63,11 @@ export class AiService {
     return this.prisma.aIChat.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: limit });
   }
 
+  async clearHistory(userId: string) {
+    await this.prisma.aIChat.deleteMany({ where: { userId } });
+    return { message: 'تاریخچه با موفقیت پاک شد' };
+  }
+
   private getMockResponse(q: string): string {
     const msg = q.toLowerCase();
     if (msg.includes('سلام') || msg.includes('درود') || msg.includes('خوبی'))

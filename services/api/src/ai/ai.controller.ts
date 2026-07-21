@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Query, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AiService } from './ai.service';
 
@@ -20,6 +20,11 @@ export class AiController {
   @Get('history')
   getHistory(@Query('limit') limit: number, @Request() req: any) {
     return this.aiService.getHistory(req.user.id, limit || 20);
+  }
+
+  @Delete('history')
+  clearHistory(@Request() req: any) {
+    return this.aiService.clearHistory(req.user.id);
   }
 }
 
