@@ -292,4 +292,33 @@
 
 **تاریخ بروزرسانی:** ۲۰ تیر ۱۴۰۵
 **آخرین commit:** 1861592 — fix(ci): add --passWithNoTests to jest
+
+---
+
+## 📌 نکات مهم برای آینده
+
+### ۱. پنل پیامکی (SMS)
+- فعلاً OTP کد در response برمیگرده برای تست (`auth.service.ts` خط ۱۰۹: `code: code`)
+- بعد از خرید پنل پیامکی:
+  1. خط `code: code,` رو از response حذف کن
+  2. به‌جای `console.log` از سرویس SMS واقعی استفاده کن
+  3. متد `sendOtp` در `services/api/src/auth/auth.service.ts`
+
+### ۲. Google OAuth
+- مدل User فیلد `googleId` داره ولی پیاده‌سازی نشده
+- در صورت نیاز، می‌تونی از passport-google-oauth20 استفاده کنی
+
+### ۳. Refresh Token
+- مدل User فیلد `refreshToken` داره ولی استفاده نشده
+- API فعلاً فقط accessToken برمیگردونه
+
+### ۴. Two-Factor Auth
+- مدل User فیلد `isTwoFactor: Boolean` داره ولی فعال نیست
+- می‌تونی بعداً از همین فیلد برای ۲FA استفاده کنی
+
+### ۵. API Keyهای سرویس‌های خارجی
+- AccuWeather: Key فعلی 401 میده — باید از developer.accuweather.com Key جدید بگیری
+- Gemini AI: برای AI chat باید از https://aistudio.google.com Key بگیری
+- DeepSeek/OpenRouter: جایگزین‌های رایگان برای AI
+
 **تهیه شده توسط:** AI Agent (Cline)
