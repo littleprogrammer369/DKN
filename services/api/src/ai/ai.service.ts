@@ -45,15 +45,24 @@ export class AiService {
       return { response: cached.response, cached: true, model: cached.model, limit };
     }
     const available = this.loadBalancer.getAvailableProviders();
+    console.log(`[AI] Available providers: ${available.map(p => p.name).join(', ')}`);
+    console.log(`[AI] All providers: ${this.providers.map(p => `${p.name}: ${p.isAvailable()}`).join(', ')}`);
     let lastError: string | null = null;
     for (const provider of available) {
       try {
+        console.log(`[AI] Trying provider: ${provider.name}`);
         const result = await provider.chat({ message, systemPrompt, temperature: 0.7, maxTokens: 1024 });
+        console.log(`[AI] ✓ ${provider.name} responded (${result.latencyMs}ms)`);
         await this.saveResponse(userId, farmId, result.content, result.model, result.tokens, result.latencyMs);
         this.cache.set(cacheKey, result.content, result.model);
         return { response: result.content, model: result.model, tokens: result.tokens, latency: result.latencyMs, limit };
-      } catch (err: any) { lastError = err.message || `${provider.name} failed`; continue; }
+      } catch (err: any) {
+        lastError = `${provider.name}: ${err.message || 'unknown error'}`;
+        console.log(`[AI] ✗ ${provider.name} failed: ${err.message}`);
+        continue;
+      }
     }
+    console.log(`[AI] All providers failed. Last error: ${lastError}. Using fallback.`);
     const fallbackResp = this.getMockResponse(message);
     await this.saveResponse(userId, farmId, fallbackResp, 'fallback', 0, 0);
     return { response: fallbackResp, model: 'fallback', limit };

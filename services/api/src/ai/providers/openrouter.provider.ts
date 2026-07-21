@@ -33,8 +33,10 @@ export class OpenRouterProvider extends BaseAiProvider {
         max_tokens: options.maxTokens ?? 1024,
       }),
     });
+    if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${await res.text()}`);
     const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content || 'پاسخی دریافت نشد';
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('OpenRouter: پاسخ خالی دریافت شد');
     return { content, model: 'meta-llama/llama-3.1-8b-instruct', tokens: data?.usage?.total_tokens || 0, latencyMs: Date.now() - start };
   }
 }

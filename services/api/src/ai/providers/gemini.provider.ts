@@ -27,8 +27,10 @@ export class GeminiProvider extends BaseAiProvider {
         }),
       }
     );
+    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
     const data = await res.json();
-    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'پاسخی دریافت نشد';
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) throw new Error('Gemini: پاسخ خالی دریافت شد');
     return { content, model: 'gemini-2.0-flash', tokens: data?.usageMetadata?.totalTokenCount || 0, latencyMs: Date.now() - start };
   }
 }
