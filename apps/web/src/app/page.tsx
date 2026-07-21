@@ -233,7 +233,7 @@ export default function LoginPage() {
           <button onClick={() => { setIsLogin(!isLogin); setError(""); setFieldErrors({}); setOtpSent(false); setOtpCode(""); setAuthMethod("password"); }} className="btn-outline mt-3 w-full">
             {isLogin ? "حساب ندارید؟ ثبت‌نام کنید" : "حساب دارید؟ وارد شوید"}
           </button>
-          <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="#" className="text-brand-green underline">قوانین</a> را می‌پذیرید</p>
+          <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="/terms" className="text-brand-green underline">قوانین</a> را می‌پذیرید</p>
         </div>
         <p className="text-xs text-gray-500 dark:text-night-muted/70 text-center mt-8 max-w-xs leading-relaxed">
           با استفاده از فناوری <span className="font-semibold text-gray-700 dark:text-night-text">هوش مصنوعی</span> و{" "}

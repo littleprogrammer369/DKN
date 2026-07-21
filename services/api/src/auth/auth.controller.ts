@@ -24,6 +24,21 @@ export class AuthController {
     return this.authService.login(phone, password);
   }
 
+  @Post('send-otp')
+  async sendOtp(@Body('phone') phone: string) {
+    return this.authService.sendOtp(phone);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body('phone') phone: string, @Body('code') code: string) {
+    return this.authService.verifyOtp(phone, code);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body('phone') phone: string, @Body('code') code: string, @Body('password') password: string) {
+    return this.authService.resetPassword(phone, code, password);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Request() req: any) {
