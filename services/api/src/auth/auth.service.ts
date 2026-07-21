@@ -78,6 +78,27 @@ export class AuthService {
     };
   }
 
+  // Change password (authenticated user)
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new BadRequestException('کاربر یافت نشد');
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('این حساب رمز عبور ندارد');
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) throw new BadRequestException('رمز عبور فعلی اشتباه است');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    return { message: 'رمز عبور با موفقیت تغییر کرد' };
+  }
+
   // Send OTP code (for forgot-password)
   async sendOtp(phone: string) {
     // Check user exists

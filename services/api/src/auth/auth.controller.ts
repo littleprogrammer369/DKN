@@ -29,6 +29,12 @@ export class AuthController {
     return this.authService.sendOtp(phone);
   }
 
+  @Post('change-password')
+  @UseGuards(AuthGuard('jwt'))
+  async changePassword(@Request() req: any, @Body('currentPassword') currentPassword: string, @Body('newPassword') newPassword: string) {
+    return this.authService.changePassword(req.user.id, currentPassword, newPassword);
+  }
+
   @Post('verify-otp')
   async verifyOtp(@Body('phone') phone: string, @Body('code') code: string) {
     return this.authService.verifyOtp(phone, code);
