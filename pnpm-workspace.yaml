@@ -1,3 +1,11 @@
 packages:
   - 'apps/*'
   - 'services/*'
+
+pnpm:
+  onlyBuiltDependencies:
+    - '@prisma/client'
+    - '@prisma/engines'
+    - 'prisma'
+    - '@nestjs/core'
+    - 'unrs-resolver'

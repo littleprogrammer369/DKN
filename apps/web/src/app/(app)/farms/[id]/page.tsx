@@ -7,6 +7,7 @@ import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pe
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
+const Polygon = dynamic(() => import('react-leaflet').then(m => m.Polygon), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 
@@ -14,7 +15,7 @@ import 'leaflet/dist/leaflet.css';
 
 interface Farm { id: string; name: string; product: string; city?: string; province?: string;
   areaHa?: number; soilType?: string; irrigationType?: string; cropDate?: string; createdAt: string;
-  lat?: number; lng?: number; }
+  lat?: number; lng?: number; boundary?: [number, number][]; }
 
 export default function FarmDetailPage() {
   const params = useParams();
@@ -71,11 +72,16 @@ export default function FarmDetailPage() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.r.png"
         />
-        {farm.lat && farm.lng && (
+        {farm.boundary && farm.boundary.length >= 3 ? (
+          <Polygon
+            positions={farm.boundary}
+            pathOptions={{ color: '#16a34a', weight: 2, fillOpacity: 0.15 }}
+          />
+        ) : farm.lat && farm.lng ? (
           <Marker position={[farm.lat, farm.lng]}>
             <Popup>{farm.name}{farm.areaHa ? ` - ${farm.areaHa} ha` : ''}</Popup>
           </Marker>
-        )}
+        ) : null}
       </MapContainer>
       <div className="absolute bottom-2 left-2 bg-white/80 dark:bg-night-card/80 text-[10px] px-2 py-1 rounded-lg z-[1000]">
         {farm.city || ''}{farm.areaHa ? ` · ${farm.areaHa} ha` : ''}</div>

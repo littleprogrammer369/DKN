@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { onlyDigits, getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
 import {
-  Sprout, Wheat, MapPin, Loader2, Navigation,
+  Sprout, Wheat, Loader2, Navigation,
   TreePine, Flower2, ChevronRight, ChevronLeft,
+  Trash2, Undo2,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 // ── Dynamic Leaflet map (ssr:false) ──
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
-const MapClickHandler = dynamic(() => import('./MapClickHandler'), { ssr: false });
+const PolygonDrawer = dynamic(() => import('./PolygonDrawer'), { ssr: false });
+import { computePolygonMetrics } from './PolygonDrawer';
+import type { LatLng, PolygonMetrics } from './PolygonDrawer';
 
 // ── Crop options ──
 const CROP_OPTIONS = [
@@ -41,8 +43,6 @@ export default function SetupPage() {
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [area, setArea] = useState('');
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
   const [soilType, setSoilType] = useState('');
   const [irrigationType, setIrrigationType] = useState('');
   const [cropYear, setCropYear] = useState(0);
@@ -52,6 +52,26 @@ export default function SetupPage() {
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [boundary, setBoundary] = useState<LatLng[]>([]);
+  const [hectares, setHectares] = useState(0);
+  const [center, setCenter] = useState<LatLng | null>(null);
+  const [focus, setFocus] = useState<LatLng | null>(null);
+
+  const handleBoundaryChange = (pts: LatLng[], m: PolygonMetrics) => {
+    setBoundary(pts);
+    setHectares(m.hectares);
+    setCenter(m.center);
+    if (pts.length >= 3) setArea(m.hectares.toFixed(2));
+  };
+  const undoPoint = () => {
+    const next = boundary.slice(0, -1);
+    const m = computePolygonMetrics(next);
+    setBoundary(next);
+    setHectares(m.hectares);
+    setCenter(m.center);
+    if (next.length >= 3) setArea(m.hectares.toFixed(2));
+  };
+  const clearBoundary = () => { setBoundary([]); setHectares(0); setCenter(null); };
 
   useEffect(() => {
     fetch('/api/v1/auth/profile', { headers: { Authorization: 'Bearer ' + localStorage.getItem('token') } })
@@ -78,8 +98,7 @@ export default function SetupPage() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setLat(pos.coords.latitude);
-          setLng(pos.coords.longitude);
+          setFocus([pos.coords.latitude, pos.coords.longitude]);
           setGeoLoading(false);
         },
         () => setGeoLoading(false),
@@ -103,7 +122,9 @@ export default function SetupPage() {
       if (cropYear && cropMonth && cropDay) body.cropDate = jalaliToGregorian(cropYear, cropMonth, cropDay);
       if (province) body.province = province;
       if (cropType) body.cropType = cropType;
-      if (lat !== null && lng !== null) { body.lat = lat; body.lng = lng; }
+      if (center) { body.lat = center[0]; body.lng = center[1]; }
+      if (boundary.length >= 3) { body.boundary = boundary; }
+      if (hectares > 0) { body.areaHa = Number(hectares.toFixed(2)); }
       const res = await fetch('/api/v1/farms', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') }, body: JSON.stringify(body),
       });
@@ -263,11 +284,14 @@ export default function SetupPage() {
             </div>
           </div>
 
-          {/* Map */}
+          {/* Map — Polygon boundary drawing */}
           <div className="card shadow-glow">
             <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2 block">
-              موقعیت روی نقشه *
+              محدوده زمین روی نقشه *
             </label>
+            <p className="text-[10px] text-gray-400 dark:text-night-muted mb-2">
+              روی گوشه‌های زمین ضربه بزن تا محدوده مشخص شود (حداقل ۳ نقطه).
+            </p>
 
             <div className="bg-gray-100 dark:bg-night-surface border border-gray-200 dark:border-night-border rounded-xl overflow-hidden h-64 mb-2">
               {typeof window !== 'undefined' ? (
@@ -281,8 +305,11 @@ export default function SetupPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {lat !== null && lng !== null && <Marker position={[lat, lng]} />}
-                  <MapClickHandler onMapClick={(pos: [number, number]) => { setLat(pos[0]); setLng(pos[1]); }} />
+                  <PolygonDrawer
+                    points={boundary}
+                    onChange={handleBoundaryChange}
+                    focus={focus}
+                  />
                 </MapContainer>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-night-muted text-sm">
@@ -291,22 +318,59 @@ export default function SetupPage() {
               )}
             </div>
 
-            {lat !== null && lng !== null && (
-              <div className="text-xs text-gray-500 dark:text-night-muted mb-2 text-center">
-                <MapPin size={12} className="inline-block mr-1" />
-                عرض: {lat.toFixed(4)} | طول: {lng.toFixed(4)}
+            {/* Toolbar */}
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <button
+                type="button"
+                onClick={undoPoint}
+                disabled={boundary.length === 0}
+                className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1 disabled:opacity-40"
+              >
+                <Undo2 size={14} />
+                حذف نقطه
+              </button>
+              <button
+                type="button"
+                onClick={clearBoundary}
+                disabled={boundary.length === 0}
+                className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1 text-red-500 border-red-200 dark:border-red-800 disabled:opacity-40"
+              >
+                <Trash2 size={14} />
+                پاک کردن
+              </button>
+              <button
+                type="button"
+                onClick={handleGeolocation}
+                disabled={geoLoading}
+                className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1"
+              >
+                {geoLoading ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
+                مکان من
+              </button>
+            </div>
+
+            {/* Live area badge */}
+            {boundary.length >= 3 && (
+              <div className="text-center mb-2">
+                <div className="inline-block bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-3 py-2 text-xs">
+                  <span className="font-bold text-brand-green">
+                    مساحت محاسبه‌شده: {hectares.toLocaleString('fa-IR', { maximumFractionDigits: 2 })} هکتار
+                  </span>
+                  <br />
+                  <span className="text-gray-500 dark:text-night-muted">
+                    {boundary.length} نقطه
+                    {center ? ` | مرکز: ${center[0].toFixed(4)}, ${center[1].toFixed(4)}` : ''}
+                  </span>
+                </div>
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={handleGeolocation}
-              disabled={geoLoading}
-              className="text-sm text-brand-green hover:underline flex items-center justify-center gap-1 w-full py-2"
-            >
-              {geoLoading ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-              استفاده از مکان فعلی من
-            </button>
+            {/* Hint when not enough points */}
+            {boundary.length > 0 && boundary.length < 3 && (
+              <p className="text-[10px] text-amber-500 dark:text-amber-400 text-center mb-2">
+                برای محاسبه مساحت، حداقل ۳ نقطه لازم است.
+              </p>
+            )}
           </div>
 
           {error && (

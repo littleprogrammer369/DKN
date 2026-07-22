@@ -94,6 +94,7 @@ model Farm {
   waterSource     WaterSource?   @map("water_source")
   irrigationType  IrrigationType? @map("irrigation_type")
   geojson         Json?
+  boundary        Json?
   isActive        Boolean        @default(true) @map("is_active")
   tags            Json?
   createdAt       DateTime       @default(now()) @map("created_at")

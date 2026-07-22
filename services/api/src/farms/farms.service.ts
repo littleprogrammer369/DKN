@@ -35,6 +35,7 @@ export class FarmsService {
     waterSource?: string;
     irrigationType?: string;
     geojson?: any;
+    boundary?: any;
   }) {
     return this.prisma.farm.create({
       data: {
@@ -49,6 +50,7 @@ export class FarmsService {
         waterSource: data.waterSource as any,
         irrigationType: data.irrigationType as any,
         geojson: data.geojson || undefined,
+        boundary: data.boundary || undefined,
       },
     });
   }
