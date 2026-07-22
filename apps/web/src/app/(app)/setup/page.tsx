@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { onlyDigits, getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
@@ -17,6 +17,16 @@ const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), 
 const PolygonDrawer = dynamic(() => import('./PolygonDrawer'), { ssr: false });
 import { computePolygonMetrics } from './PolygonDrawer';
 import type { LatLng, PolygonMetrics } from './PolygonDrawer';
+
+// Small wrapper so useSearchParams is consumed inside a Suspense boundary
+function EditParam({ onEditId }: { onEditId: (id: string | null) => void }) {
+  const searchParams = useSearchParams();
+  onEditId(searchParams.get('edit'));
+  return null;
+}
+
+// We import useSearchParams here to avoid a second dynamic import
+import { useSearchParams } from 'next/navigation';
 
 // ── Crop options ──
 const CROP_OPTIONS = [
@@ -37,6 +47,7 @@ const PROVINCES = [
 
 export default function SetupPage() {
   const router = useRouter();
+  const [editId, setEditId] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [farmName, setFarmName] = useState('');
   const [cropType, setCropType] = useState('');
@@ -56,6 +67,15 @@ export default function SetupPage() {
   const [hectares, setHectares] = useState(0);
   const [center, setCenter] = useState<LatLng | null>(null);
   const [focus, setFocus] = useState<LatLng | null>(null);
+  const [editing, setEditing] = useState(false);
+
+  /** Convert a Gregorian Date to Jalali year/month/day for prefill. */
+  const gregToJalali = (d: Date): { year: number; month: number; day: number } => {
+    const gy = d.getFullYear(), gm = d.getMonth() + 1, gd = d.getDate();
+    let jy = gy - 621, jm: number, jd = gd;
+    if (gm < 3 || (gm === 3 && gd < 21)) { jy--; jm = gm + 9; } else { jm = gm - 3; }
+    return { year: jy, month: jm, day: jd };
+  };
 
   const handleBoundaryChange = (pts: LatLng[], m: PolygonMetrics) => {
     setBoundary(pts);
@@ -79,6 +99,42 @@ export default function SetupPage() {
     const today = getJalaliToday();
     setCropYear(today.year); setCropMonth(today.month); setCropDay(today.day);
   }, []);
+
+  // Load existing farm for editing
+  useEffect(() => {
+    if (!editId) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    setLoading(true);
+    fetch('/api/v1/farms/' + editId, { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.json()).then((farm: any) => {
+        if (!farm || farm.error) return;
+        setEditing(true);
+        setFarmName(farm.name || '');
+        setCity(farm.city || '');
+        setProvince(farm.province || '');
+        setArea(farm.areaHa ? String(farm.areaHa) : '');
+        setSoilType(farm.soilType || '');
+        setIrrigationType(farm.irrigationType || '');
+        setCropType(farm.product || '');
+        if (farm.cropDate) {
+          const j = gregToJalali(new Date(farm.cropDate));
+          setCropYear(j.year); setCropMonth(j.month); setCropDay(j.day);
+        }
+        const pts: LatLng[] = (farm.boundary || []).map((p: any) => [p[0], p[1]]);
+        setBoundary(pts);
+        if (pts.length >= 3) {
+          const m = computePolygonMetrics(pts);
+          setHectares(m.hectares);
+          setCenter(m.center);
+          setFocus(m.center);
+        } else if (farm.lat != null && farm.lng != null) {
+          setCenter([farm.lat, farm.lng]);
+          setFocus([farm.lat, farm.lng]);
+        }
+        setLoading(false);
+      }).catch(() => setLoading(false));
+  }, [editId]);
 
   // Fix Leaflet default icon for bundlers
   useEffect(() => {
@@ -125,11 +181,13 @@ export default function SetupPage() {
       if (center) { body.lat = center[0]; body.lng = center[1]; }
       if (boundary.length >= 3) { body.boundary = boundary; }
       if (hectares > 0) { body.areaHa = Number(hectares.toFixed(2)); }
-      const res = await fetch('/api/v1/farms', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') }, body: JSON.stringify(body),
+      const url = editing ? '/api/v1/farms/' + editId : '/api/v1/farms';
+      const method = editing ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') }, body: JSON.stringify(body),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'error'); }
-      router.push('/dashboard');
+      router.push(editing ? '/farms/' + editId : '/dashboard');
     } catch (err: any) { setError(err.message || 'error');
     } finally { setLoading(false); }
   };
@@ -156,17 +214,21 @@ export default function SetupPage() {
   );
 
   return (
-    <div className="flex flex-col px-1">
+    <>
+      <Suspense fallback={null}>
+        <EditParam onEditId={setEditId} />
+      </Suspense>
+      <div className="flex flex-col px-1">
       {/* ── Welcome header ── */}
       <div className="text-center mb-4 mt-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 mb-3">
           <Sprout size={32} className="text-brand-green" />
         </div>
         <h1 className="text-xl font-extrabold text-gray-800 dark:text-night-text">
-          {userName || 'کشاورز عزیز'}، به داده کشت نوین خوش آمدی!
+          {editing ? 'ویرایش مزرعه' : (userName || 'کشاورز عزیز') + '، به داده کشت نوین خوش آمدی!'}
         </h1>
         <p className="text-sm text-gray-500 dark:text-night-muted mt-2">
-          بیا اولین مزرعه‌ات رو بسازیم
+          {editing ? 'مشخصات مزرعه را ویرایش کن' : 'بیا اولین مزرعه‌ات رو بسازیم'}
         </p>
       </div>
 
@@ -451,12 +513,13 @@ export default function SetupPage() {
             </button>
             <button onClick={handleCreate} disabled={loading} className="btn-primary flex-1 flex items-center justify-center gap-2">
               {loading ? <Loader2 size={18} className="animate-spin" /> : <Sprout size={18} />}
-              {loading ? 'در حال ساخت...' : 'ساخت مزرعه'}
+              {loading ? (editing ? 'در حال ذخیره...' : 'در حال ساخت...') : (editing ? 'ذخیره تغییرات' : 'ساخت مزرعه')}
             </button>
           </div>
         </>
       )}
     </div>
+    </>
   );
 }
 

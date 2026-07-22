@@ -55,6 +55,24 @@ export class FarmsService {
     });
   }
 
+  async update(id: string, userId: string, data: any) {
+    const farm = await this.findOne(id, userId);
+    return this.prisma.farm.update({
+      where: { id },
+      data: {
+        name: data.name ?? farm.name,
+        product: (data.cropType || data.product) ?? farm.product,
+        province: data.province ?? farm.province,
+        city: data.city ?? farm.city,
+        areaHa: data.areaHa ?? farm.areaHa,
+        soilType: data.soilType ?? farm.soilType,
+        irrigationType: data.irrigationType ?? farm.irrigationType,
+        cropDate: data.cropDate ? new Date(data.cropDate) : farm.cropDate,
+        boundary: data.boundary ?? farm.boundary,
+      },
+    });
+  }
+
   async remove(id: string, userId: string) {
     const farm = await this.findOne(id, userId);
     await this.prisma.farm.update({

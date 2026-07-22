@@ -5,13 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pencil, Loader2 } from 'lucide-react';
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
-const Polygon = dynamic(() => import('react-leaflet').then(m => m.Polygon), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
-
-import 'leaflet/dist/leaflet.css';
+const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
 
 interface Farm { id: string; name: string; product: string; city?: string; province?: string;
   areaHa?: number; soilType?: string; irrigationType?: string; cropDate?: string; createdAt: string;
@@ -28,15 +22,6 @@ export default function FarmDetailPage() {
     if (!token) { router.push('/'); return; }
     fetch('/api/v1/farms/' + params.id, { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json()).then(d => { setFarm(d); setLoading(false); }).catch(() => setLoading(false));
-    // Fix Leaflet default icon
-    import('leaflet').then(L => {
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-    });
   }, [params.id, router]);
 
   if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted"><Loader2 className="animate-spin" size={16} /></p></div>;
@@ -60,31 +45,24 @@ export default function FarmDetailPage() {
 
     <div className="flex items-center gap-3 mb-4">
       <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center"><Sprout className="text-green-600" size={22} /></div>
-      <div>
+      <div className="flex-1">
         <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">{farm.name}</h1>
         <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + String(farm.areaHa) + ' هکتار' : ''}</p>
       </div>
+      <button
+        onClick={() => router.push('/setup?edit=' + farm.id)}
+        className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1"
+      >
+        <Pencil size={14} /> ویرایش
+      </button>
     </div>
 
-    <div className="card h-48 mb-4 overflow-hidden p-0 relative">
-      <MapContainer center={[35.7, 51.4]} zoom={13} className="h-full w-full z-0" scrollWheelZoom={false}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.r.png"
-        />
-        {farm.boundary && farm.boundary.length >= 3 ? (
-          <Polygon
-            positions={farm.boundary}
-            pathOptions={{ color: '#16a34a', weight: 2, fillOpacity: 0.15 }}
-          />
-        ) : farm.lat && farm.lng ? (
-          <Marker position={[farm.lat, farm.lng]}>
-            <Popup>{farm.name}{farm.areaHa ? ` - ${farm.areaHa} ha` : ''}</Popup>
-          </Marker>
-        ) : null}
-      </MapContainer>
-      <div className="absolute bottom-2 left-2 bg-white/80 dark:bg-night-card/80 text-[10px] px-2 py-1 rounded-lg z-[1000]">
-        {farm.city || ''}{farm.areaHa ? ` · ${farm.areaHa} ha` : ''}</div>
+    <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-night-border mb-4">
+      <FarmMap
+        name={farm.name}
+        center={farm.lat != null && farm.lng != null ? [farm.lat, farm.lng] : null}
+        boundary={farm.boundary ?? null}
+      />
     </div>
 
     <div className="grid grid-cols-2 gap-3 mb-4">
