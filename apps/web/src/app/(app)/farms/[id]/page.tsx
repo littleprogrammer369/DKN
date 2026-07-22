@@ -50,8 +50,9 @@ export default function FarmDetailPage() {
         <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + String(farm.areaHa) + ' هکتار' : ''}</p>
       </div>
       <button
+        type="button"
         onClick={() => router.push('/setup?edit=' + farm.id)}
-        className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1"
+        className="btn-outline w-auto shrink-0 !py-1.5 !px-3 !text-xs flex items-center gap-1"
       >
         <Pencil size={14} /> ویرایش
       </button>
@@ -87,9 +88,9 @@ export default function FarmDetailPage() {
     </div>
 
     <div className="flex gap-2 mb-4">
-      <button onClick={() => router.push('/irrigation')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Droplet size={14} /> آبیاری</button>
-      <button onClick={() => router.push('/pests')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Bug size={14} /> آفات</button>
-      <button onClick={() => router.push('/ai')} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Sparkles size={14} /> مشاوره AI</button>
+      <button onClick={() => router.push('/irrigation?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Droplet size={14} /> آبیاری</button>
+      <button onClick={() => router.push('/pests?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Bug size={14} /> آفات</button>
+      <button onClick={() => router.push('/ai?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Sparkles size={14} /> مشاوره AI</button>
     </div>
 <div className="card"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ ثبت</div><div className="text-sm font-bold text-gray-700 mt-1">{toJalali(farm.createdAt)}</div></div>
   </>);

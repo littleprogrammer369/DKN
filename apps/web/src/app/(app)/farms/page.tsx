@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Wheat, Sprout, TreePine, Pencil, Trash2, MoreVertical, Plus,
-  Check, AlertTriangle, Flower2
+  Check, AlertTriangle, Flower2, Eye, Sparkles, Droplet, Bug, Share2
 } from 'lucide-react';
 
 /* ── Types ── */
@@ -201,13 +201,9 @@ function FarmCard({
           >
             <Trash2 size={16} />
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); }}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/50 transition-colors"
-            aria-label="بیشتر"
-          >
-            <MoreVertical size={16} />
-          </button>
+
+          {/** Dropdown menu */}
+          <Menu farm={farm} router={router} />
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
@@ -232,6 +228,63 @@ function FarmCard({
   );
 }
 
+/* ── Farm Card Menu ── */
+function Menu({ farm, router }: { farm: Farm; router: any }) {
+  const [open, setOpen] = useState(false);
+
+  const shareFarm = async () => {
+    setOpen(false);
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/farms/${farm.id}` : '';
+    try {
+      if (navigator.share) await navigator.share({ title: farm.name, url });
+      else await navigator.clipboard.writeText(url);
+    } catch { /* cancelled / unsupported */ }
+  };
+
+  const items = [
+    { label: 'مشاهده جزئیات', icon: Eye, go: () => router.push('/farms/' + farm.id) },
+    { label: 'مشاوره AI', icon: Sparkles, go: () => router.push('/ai?farm=' + farm.id) },
+    { label: 'برنامه آبیاری', icon: Droplet, go: () => router.push('/irrigation?farm=' + farm.id) },
+    { label: 'گزارش آفت', icon: Bug, go: () => router.push('/pests?farm=' + farm.id) },
+    { label: 'اشتراک‌گذاری', icon: Share2, go: shareFarm },
+  ];
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/50 transition-colors"
+        aria-label="بیشتر"
+      >
+        <MoreVertical size={18} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={(e) => { e.stopPropagation(); setOpen(false); }} />
+          <div className="absolute left-0 top-full z-40 mt-1 w-52 max-w-[80vw] rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border overflow-hidden text-right">
+            {items.map((it) => {
+              const Icon = it.icon;
+              return (
+                <button
+                  key={it.label}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); it.go(); }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-night-text hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                >
+                  <Icon size={16} className="text-gray-400 dark:text-white/50 shrink-0" />
+                  {it.label}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function FarmsPage() {
   const router = useRouter();
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -247,7 +300,7 @@ export default function FarmsPage() {
   }, [router]);
 
   const handleEdit = (farm: Farm) => {
-    router.push('/farms/' + farm.id );
+    router.push('/setup?edit=' + farm.id);
   };
 
   const handleDelete = async (farm: Farm) => {
