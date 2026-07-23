@@ -227,7 +227,7 @@ function SetupPageInner() {
         <div className="card p-5 space-y-5">
           {/* Farm name */}
           <div>
-            <label className="flex items-center justify-end gap-1 text-sm font-bold text-gray-700 dark:text-night-text mb-2">
+            <label className="block text-right text-sm font-bold text-gray-700 dark:text-night-text mb-2">
               اسم مزرعه <span className="text-red-500">*</span>
             </label>
             <input
@@ -241,7 +241,7 @@ function SetupPageInner() {
 
           {/* Crop type — single row of 3 */}
           <div>
-            <label className="flex items-center justify-end gap-1 text-sm font-bold text-gray-700 dark:text-night-text mb-2">
+            <label className="block text-right text-sm font-bold text-gray-700 dark:text-night-text mb-2">
               نوع محصول <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
