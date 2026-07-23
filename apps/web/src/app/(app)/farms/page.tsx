@@ -1,10 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Wheat, Sprout, TreePine, Pencil, Trash2, MoreVertical, Plus,
-  Check, AlertTriangle, Flower2, Eye, Sparkles, Droplet, Bug, Share2
+  Check, AlertTriangle, Flower2, Eye, Sparkles, Droplet, Bug, Share2,
+  Search, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 /* ── Types ── */
@@ -53,6 +55,12 @@ function computeHealth(farm: Farm): number {
   if (farm.healthScore != null) return farm.healthScore;
   return farm.isActive ? 100 : 25;
 }
+
+const CROP_LABELS: Record<string, string> = {
+  wheat: 'گندم', gandom: 'گندم', barley: 'جو', jo: 'جو', rice: 'برنج',
+  corn: 'ذرت', pistachio: 'پسته', saffron: 'زعفران',
+};
+const cropLabel = (v: string) => CROP_LABELS[v.toLowerCase()] || v;
 
 /* ── Stat Card ── */
 function StatCard({
@@ -169,6 +177,62 @@ function FarmCard({
         ? 'bg-amber-500 dark:bg-amber-400'
         : 'bg-red-500 dark:bg-red-400';
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const closeMenu = () => { setMenuOpen(false); setPos(null); };
+  const openMenu = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) { setPos({ top: r.bottom + 4, left: r.left }); setMenuOpen(true); }
+  };
+
+  // flip above the button / clamp horizontally so it never leaves the viewport
+  useLayoutEffect(() => {
+    if (!menuOpen || !menuRef.current || !pos) return;
+    const mh = menuRef.current.offsetHeight;
+    const mw = menuRef.current.offsetWidth;
+    let { top, left } = pos;
+    if (top + mh > window.innerHeight - 8) {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) top = Math.max(8, r.top - mh - 4);
+    }
+    if (left + mw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - mw - 8);
+    if (left !== pos.left || top !== pos.top) setPos({ top, left });
+  }, [menuOpen, pos]);
+
+  // close on Escape / any scroll (capture) / resize
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu(); };
+    const onClose = () => closeMenu();
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onClose, true);
+    window.addEventListener('resize', onClose);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onClose, true);
+      window.removeEventListener('resize', onClose);
+    };
+  }, [menuOpen]);
+
+  const shareFarm = async () => {
+    closeMenu();
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/farms/${farm.id}` : '';
+    try {
+      if (navigator.share) await navigator.share({ title: farm.name, url });
+      else await navigator.clipboard.writeText(url);
+    } catch { /* cancelled */ }
+  };
+
+  const menuItems = [
+    { label: 'مشاهده جزئیات', icon: Eye, go: () => router.push('/farms/' + farm.id) },
+    { label: 'مشاوره AI', icon: Sparkles, go: () => router.push('/ai?farm=' + farm.id) },
+    { label: 'برنامه آبیاری', icon: Droplet, go: () => router.push('/irrigation?farm=' + farm.id) },
+    { label: 'گزارش آفت', icon: Bug, go: () => router.push('/pests?farm=' + farm.id) },
+    { label: 'اشتراک‌گذاری', icon: Share2, go: shareFarm },
+  ];
+
   return (
     <div
       className="card cursor-pointer shadow-glow hover:shadow-glow-lg hover:scale-[1.01] transition-all mb-3"
@@ -202,8 +266,15 @@ function FarmCard({
             <Trash2 size={16} />
           </button>
 
-          {/** Dropdown menu */}
-          <Menu farm={farm} router={router} />
+          <button
+            ref={btnRef}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); menuOpen ? closeMenu() : openMenu(); }}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/50 transition-colors"
+            aria-label="بیشتر"
+          >
+            <MoreVertical size={18} />
+          </button>
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
@@ -224,47 +295,16 @@ function FarmCard({
           </span>
         </div>
       )}
-    </div>
-  );
-}
 
-/* ── Farm Card Menu ── */
-function Menu({ farm, router }: { farm: Farm; router: any }) {
-  const [open, setOpen] = useState(false);
-
-  const shareFarm = async () => {
-    setOpen(false);
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/farms/${farm.id}` : '';
-    try {
-      if (navigator.share) await navigator.share({ title: farm.name, url });
-      else await navigator.clipboard.writeText(url);
-    } catch { /* cancelled / unsupported */ }
-  };
-
-  const items = [
-    { label: 'مشاهده جزئیات', icon: Eye, go: () => router.push('/farms/' + farm.id) },
-    { label: 'مشاوره AI', icon: Sparkles, go: () => router.push('/ai?farm=' + farm.id) },
-    { label: 'برنامه آبیاری', icon: Droplet, go: () => router.push('/irrigation?farm=' + farm.id) },
-    { label: 'گزارش آفت', icon: Bug, go: () => router.push('/pests?farm=' + farm.id) },
-    { label: 'اشتراک‌گذاری', icon: Share2, go: shareFarm },
-  ];
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
-        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/50 transition-colors"
-        aria-label="بیشتر"
-      >
-        <MoreVertical size={18} />
-      </button>
-
-      {open && (
+      {menuOpen && pos && createPortal(
         <>
-          <div className="fixed inset-0 z-30" onClick={(e) => { e.stopPropagation(); setOpen(false); }} />
-          <div className="absolute left-0 top-full z-40 mt-1 w-52 max-w-[80vw] rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border overflow-hidden text-right">
-            {items.map((it) => {
+          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); closeMenu(); }} />
+          <div
+            ref={menuRef}
+            style={{ position: 'fixed', top: pos.top, left: pos.left, width: 208 }}
+            className="z-50 rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border overflow-hidden text-right"
+          >
+            {menuItems.map((it) => {
               const Icon = it.icon;
               return (
                 <button
@@ -279,7 +319,8 @@ function Menu({ farm, router }: { farm: Farm; router: any }) {
               );
             })}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );
@@ -315,6 +356,40 @@ export default function FarmsPage() {
     } catch { /* ignore */ }
   };
 
+  // ── Search + filters + pagination ──
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'healthy' | 'attention'>('all');
+  const [cropFilter, setCropFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return farms.filter(f => {
+      if (q) {
+        const hay = [f.name, f.product, f.city, f.province].filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const h = computeHealth(f);
+      if (statusFilter === 'healthy' && h < 80) return false;
+      if (statusFilter === 'attention' && h >= 50) return false;
+      if (cropFilter !== 'all' && (f.product || '').toLowerCase() !== cropFilter) return false;
+      return true;
+    });
+  }, [farms, query, statusFilter, cropFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const cropOptions = useMemo(
+    () => Array.from(new Set(farms.map(f => (f.product || '').toLowerCase()).filter(Boolean))),
+    [farms],
+  );
+
+  // reset to first page whenever the query/filters change
+  useEffect(() => { setPage(1); }, [query, statusFilter, cropFilter]);
+
   if (loading) return <FarmsLoading />;
 
   return (
@@ -337,11 +412,62 @@ export default function FarmsPage() {
       {/* Stats */}
       {farms.length > 0 && <FarmsStats farms={farms} />}
 
+      {/* Search */}
+      <div className="relative mb-3">
+        <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="جستجوی مزرعه، محصول یا شهر…"
+          className="input-glass w-full pr-10 pl-9 text-right"
+        />
+        {query && (
+          <button onClick={() => setQuery('')} aria-label="پاک کردن"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white/70">
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1 -mx-1 px-1">
+        {([['all', 'همه'], ['healthy', 'سالم'], ['attention', 'نیاز به توجه']] as const).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setStatusFilter(k)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+              statusFilter === k
+                ? 'bg-brand-green text-white border-brand-green'
+                : 'border-gray-200 dark:border-night-border text-gray-600 dark:text-night-muted hover:border-brand-green/50'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        {cropOptions.length > 1 && (
+          <select
+            value={cropFilter}
+            onChange={(e) => setCropFilter(e.target.value)}
+            className="input-glass !py-1.5 !text-xs shrink-0 text-right"
+          >
+            <option value="all">همه محصولات</option>
+            {cropOptions.map(c => <option key={c} value={c}>{cropLabel(c)}</option>)}
+          </select>
+        )}
+      </div>
+
       {/* Empty */}
       {farms.length === 0 && <FarmsEmptyState />}
 
+      {/* Results count */}
+      {farms.length > 0 && filtered.length !== farms.length && (
+        <p className="text-xs text-gray-500 dark:text-night-muted text-right mb-2">
+          {toPersianNum(filtered.length)} نتیجه از {toPersianNum(farms.length)}
+        </p>
+      )}
+
       {/* Farm cards */}
-      {farms.map(farm => (
+      {pageItems.map(farm => (
         <FarmCard
           key={farm.id}
           farm={farm}
@@ -349,6 +475,43 @@ export default function FarmsPage() {
           onDelete={handleDelete}
         />
       ))}
+
+      {/* No results */}
+      {farms.length > 0 && filtered.length === 0 && (
+        <div className="p-8 text-center">
+          <Search size={28} className="mx-auto text-gray-400 dark:text-white/40 mb-2" />
+          <p className="text-gray-600 dark:text-night-muted mb-3">مزرعه‌ای با این مشخصات پیدا نشد.</p>
+          <button
+            onClick={() => { setQuery(''); setStatusFilter('all'); setCropFilter('all'); }}
+            className="btn-outline !text-xs !py-1.5 !px-3"
+          >
+            پاک کردن فیلترها
+          </button>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filtered.length > PAGE_SIZE && (
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <button
+            disabled={safePage <= 1}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            className="btn-outline !py-1.5 !px-3 !text-xs disabled:opacity-40 flex items-center gap-1"
+          >
+            <ChevronRight size={14} /> قبلی
+          </button>
+          <span className="text-sm text-gray-600 dark:text-night-muted tabular-nums">
+            {toPersianNum(safePage)} / {toPersianNum(pageCount)}
+          </span>
+          <button
+            disabled={safePage >= pageCount}
+            onClick={() => setPage(p => Math.min(pageCount, p + 1))}
+            className="btn-outline !py-1.5 !px-3 !text-xs disabled:opacity-40 flex items-center gap-1"
+          >
+            بعدی <ChevronLeft size={14} />
+          </button>
+        </div>
+      )}
     </>
   );
 }
