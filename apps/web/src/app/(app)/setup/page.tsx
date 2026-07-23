@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { onlyDigits, getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
+import { getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
 import { CROPS } from '@/lib/crops';
 import {
   Sprout, Wheat, Loader2, Navigation,
@@ -190,21 +190,27 @@ export default function SetupPage() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   const Stepper = () => (
-    <>
-      <div className="flex items-center justify-center gap-2 mb-2">
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              step >= s ? 'bg-brand-green w-8' : 'bg-gray-300 dark:bg-night-border w-2'
-            }`}
-          />
+    <div className="mb-5">
+      <div className="flex items-center justify-center" dir="ltr">
+        {[1, 2, 3].map((s, i) => (
+          <div key={s} className="flex items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+              step > s ? 'bg-brand-green text-white'
+              : step === s ? 'bg-brand-green text-white ring-4 ring-brand-green/20 scale-110'
+              : 'bg-white/10 text-gray-400 dark:text-night-muted border border-white/10'
+            }`}>
+              {step > s ? '✓' : s}
+            </div>
+            {i < 2 && (
+              <div className={`w-10 h-0.5 mx-1 rounded ${step > s ? 'bg-brand-green' : 'bg-white/10'}`} />
+            )}
+          </div>
         ))}
       </div>
-      <p className="text-center text-xs text-gray-500 dark:text-night-muted mb-5">
-        مرحله {step} از ۳
+      <p className="text-center text-xs text-gray-500 dark:text-night-muted mt-2">
+        مرحله {step} از 3
       </p>
-    </>
+    </div>
   );
 
   return (
@@ -232,118 +238,112 @@ export default function SetupPage() {
 
       {/* ── Step 1: Farm name, crop type, area ── */}
       {step === 1 && (
-        <>
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-              اسم مزرعه *
+        <div className="card p-5 space-y-5">
+          {/* Farm name */}
+          <div>
+            <label className="flex items-center justify-end gap-1 text-sm font-bold text-gray-700 dark:text-night-text mb-2">
+              اسم مزرعه <span className="text-red-500">*</span>
             </label>
             <input
-              placeholder="مثلاً: مزرعه گندم شمالی"
               value={farmName}
-              onChange={e => setFarmName(e.target.value)}
+              onChange={(e) => setFarmName(e.target.value)}
+              placeholder="مثلاً: مزرعه گندم شمالی"
               className="input-glass text-right"
               autoFocus
             />
           </div>
 
-          {/* Crop type grid */}
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2 block">
-              نوع محصول *
+          {/* Crop type — single row of 3 */}
+          <div>
+            <label className="flex items-center justify-end gap-1 text-sm font-bold text-gray-700 dark:text-night-text mb-2">
+              نوع محصول <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {CROPS.map((crop) => {
                 const Icon = crop.icon;
-                const isSelected = cropType === crop.value;
+                const sel = cropType === crop.value;
                 return (
                   <button
                     key={crop.value}
                     type="button"
                     onClick={() => setCropType(crop.value)}
-                    className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${
-                      isSelected
-                        ? 'border-brand-green bg-green-50 dark:bg-green-900/20'
-                        : 'border-gray-200 dark:border-night-border hover:border-brand-green/50'
+                    className={`relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 ${
+                      sel
+                        ? 'border-brand-green bg-brand-green/10 shadow-glow'
+                        : 'border-white/10 bg-white/40 dark:bg-white/[0.03] hover:border-brand-green/50'
                     }`}
                   >
-                    <Icon className={isSelected ? 'text-brand-green' : 'text-gray-400 dark:text-night-muted'} size={24} />
-                    <span className={`text-xs ${isSelected ? 'text-brand-green font-semibold' : 'text-gray-500 dark:text-night-muted'}`}>
-                      {crop.label}
+                    <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${sel ? 'bg-brand-green text-white' : 'bg-brand-green/10 text-brand-green'}`}>
+                      <Icon size={20} />
                     </span>
+                    <span className={`text-xs font-bold ${sel ? 'text-brand-green' : 'text-gray-600 dark:text-night-text'}`}>{crop.label}</span>
+                    {sel && (
+                      <span className="absolute top-1 left-1 w-4 h-4 rounded-full bg-brand-green text-white flex items-center justify-center text-[10px]">✓</span>
+                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-              مساحت (هکتار)
-            </label>
+          {/* Area */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">مساحت (هکتار)</label>
             <input
-              type="tel" inputMode="decimal"
-              placeholder="مثلاً: 3.5"
               value={area}
-              onChange={e => setArea(onlyDigits(e.target.value.replace('.','')).length > 0 ? e.target.value.replace(/[^\d.]/g,'') : '')}
+              onChange={(e) => setArea(e.target.value.replace(/[^\d.]/g, ''))}
+              placeholder="مثلاً: 3.5"
               className="input-glass text-right"
+              inputMode="decimal"
             />
+            <p className="text-[11px] text-gray-400 dark:text-night-muted mt-1.5 text-right">
+              اختیاری — مرحله بعد می‌تونی محدوده زمین رو روی نقشه بکشی تا خودکار محاسبه بشه.
+            </p>
           </div>
 
-          {error && (
-            <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-red-500 text-right">{error}</div>}
 
-          <button onClick={() => setStep(2)} disabled={!farmName} className="btn-primary mb-3 flex items-center justify-center gap-2">
-            ادامه
-            <ChevronLeft size={18} />
+          <button onClick={() => setStep(2)} disabled={!farmName}
+            className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
+            ادامه <ChevronLeft size={16} />
           </button>
-          <button onClick={() => router.push('/dashboard')} className="btn-outline">
-            فعلاً رد می‌کنم
-          </button>
-        </>
+          <button onClick={() => router.push('/dashboard')} className="btn-outline">فعلاً رد می‌کنم</button>
+        </div>
       )}
 
 
       {/* ── Step 2: City, Province, Map ── */}
       {step === 2 && (
-        <>
-          <div className="card shadow-glow">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-                  شهر *
-                </label>
-                <input
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                  placeholder="مثل: ساوه"
-                  className="input-glass text-right"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-                  استان *
-                </label>
-                <select
-                  value={province}
-                  onChange={e => setProvince(e.target.value)}
-                  className="input-glass text-right"
-                >
-                  <option value="">انتخاب استان</option>
-                  {PROVINCES.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
+        <div className="card p-5 space-y-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">شهر <span className="text-red-500">*</span></label>
+              <input
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="مثل: ساوه"
+                className="input-glass text-right"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">استان <span className="text-red-500">*</span></label>
+              <select
+                value={province}
+                onChange={e => setProvince(e.target.value)}
+                className="input-glass text-right"
+              >
+                <option value="">انتخاب استان</option>
+                {PROVINCES.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
             </div>
           </div>
 
           {/* Map — Polygon boundary drawing */}
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2 block">
-              محدوده زمین روی نقشه *
+          <div>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2">
+              محدوده زمین روی نقشه <span className="text-red-500">*</span>
             </label>
             <p className="text-[10px] text-gray-400 dark:text-night-muted mb-2">
               روی گوشه‌های زمین ضربه بزن تا محدوده مشخص شود (حداقل ۳ نقطه).
@@ -430,9 +430,7 @@ export default function SetupPage() {
           </div>
 
           {error && (
-            <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">
-              {error}
-            </div>
+            <div className="text-sm text-red-500 text-center mb-3">{error}</div>
           )}
 
           <div className="flex gap-2">
@@ -441,21 +439,18 @@ export default function SetupPage() {
               بازگشت
             </button>
             <button onClick={() => setStep(3)} className="btn-primary flex-1 flex items-center justify-center gap-2">
-              ادامه
-              <ChevronLeft size={18} />
+              ادامه <ChevronLeft size={18} />
             </button>
           </div>
-        </>
+        </div>
       )}
 
 
       {/* ── Step 3: Crop date, soil, irrigation, submit ── */}
       {step === 3 && (
-        <>
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-              تاریخ کشت (شمسی)
-            </label>
+        <div className="card p-5 space-y-5">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">تاریخ کشت (شمسی)</label>
             <div className="flex gap-2">
               <select value={cropYear} onChange={e => setCropYear(Number(e.target.value))} className="input-glass flex-1 text-center">
                 <option value="0">سال</option>
@@ -472,10 +467,8 @@ export default function SetupPage() {
             </div>
           </div>
 
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-              نوع خاک
-            </label>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">نوع خاک</label>
             <select value={soilType} onChange={e => setSoilType(e.target.value)} className="input-glass text-right">
               <option value="">انتخاب کنید</option>
               <option value="رسی">رسی</option><option value="شنی">شنی</option><option value="لومی">لومی</option>
@@ -483,10 +476,8 @@ export default function SetupPage() {
             </select>
           </div>
 
-          <div className="card shadow-glow">
-            <label className="text-xs font-bold text-gray-600 dark:text-night-muted mb-1 block">
-              روش آبیاری
-            </label>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">روش آبیاری</label>
             <select value={irrigationType} onChange={e => setIrrigationType(e.target.value)} className="input-glass text-right">
               <option value="">انتخاب کنید</option>
               <option value="DRIP">قطره‌ای</option><option value="SPRINKLER">بارانی</option>
@@ -494,11 +485,7 @@ export default function SetupPage() {
             </select>
           </div>
 
-          {error && (
-            <div className="text-xs text-red-500 dark:text-red-400 text-center mb-3 bg-red-50 dark:bg-red-900/20 py-2 rounded-lg">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-red-500 text-center mb-3">{error}</div>}
 
           <div className="flex gap-2">
             <button onClick={() => setStep(2)} className="btn-outline flex-1 flex items-center justify-center gap-2">
@@ -510,7 +497,7 @@ export default function SetupPage() {
               {loading ? (editing ? 'در حال ذخیره...' : 'در حال ساخت...') : (editing ? 'ذخیره تغییرات' : 'ساخت مزرعه')}
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
     </>

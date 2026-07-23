@@ -67,13 +67,16 @@ p, span, label, div { color: inherit; }
 }
 
 .dark .input-glass {
-  background: rgba(15, 30, 20, 0.6);
+  background: rgba(255, 255, 255, 0.05);
   color: #F9FAFB;
-  border-color: rgba(43, 182, 115, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
-
-.dark .input-glass::placeholder { color: #9CA3AF; }
-
+.dark .input-glass::placeholder { color: #6B7280; }
+.dark .input-glass:focus {
+  border-color: var(--brand-green);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(43, 182, 115, 0.18);
+}
 /* ── Buttons ── */
 .btn-primary {
   width: 100%;
