@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pencil, Loader2 } from 'lucide-react';
 import { cropLabel } from '@/lib/crops';
+import SatelliteCard from '@/components/SatelliteCard';
+import SatelliteChart from '@/components/SatelliteChart';
 
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
 
@@ -24,6 +26,19 @@ export default function FarmDetailPage() {
     fetch('/api/v1/farms/' + params.id, { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json()).then(d => { setFarm(d); setLoading(false); }).catch(() => setLoading(false));
   }, [params.id, router]);
+
+  const [satellite, setSatellite] = useState<any>(null);
+  const [satHistory, setSatHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!farm?.id) return;
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: 'Bearer ' + (token || '') };
+    fetch('/api/v1/satellite/' + farm.id, { headers })
+      .then(r => (r.ok ? r.json() : null)).then(setSatellite).catch(() => {});
+    fetch('/api/v1/satellite/' + farm.id + '/history?days=90', { headers })
+      .then(r => (r.ok ? r.json() : [])).then(d => setSatHistory(Array.isArray(d) ? d : [])).catch(() => {});
+  }, [farm?.id]);
 
   if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted"><Loader2 className="animate-spin" size={16} /></p></div>;
   if (!farm) return <div className="text-center mt-12"><p className="text-red-500 dark:text-red-400 dark:text-red-400">مزرعه یافت نشد</p></div>;
@@ -103,7 +118,13 @@ export default function FarmDetailPage() {
       <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع خاک</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.soilType || '—'}</div></div>
     </div>
 
-        <div className="card mb-4">
+      {/* ── Satellite monitoring ── */}
+      <div className="space-y-3 mb-4">
+        <SatelliteCard data={satellite} />
+        <SatelliteChart data={satHistory} />
+      </div>
+
+    <div className="card mb-4">
       <div className="text-xs font-bold mb-3">معیارهای مزرعه</div>
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">

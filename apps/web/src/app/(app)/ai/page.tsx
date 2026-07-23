@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Send, Sparkles, User, Bot, Loader2, Copy, Check, Plus, History, Sprout, ChevronDown, Trash2, MessageSquare, RefreshCw } from 'lucide-react';
 import { ChatInput } from '@/components/ChatInput';
 import ReactMarkdown from 'react-markdown';
@@ -12,8 +12,10 @@ interface Message { role: 'user' | 'ai'; content: string; time?: Date; id?: stri
 
 const WELCOME_MSG = 'سلام! من دستیار هوشمند مزرعه شما هستم. هر سوالی درباره کشاورزی، آبیاری، آفات یا مدیریت مزرعه داری بپرس.';
 
-export default function AiChatPage() {
+function AiChatInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const farmParam = searchParams.get('farm');
   const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -38,7 +40,13 @@ export default function AiChatPage() {
       .then((d) => {
         const fl = Array.isArray(d) ? d : [];
         setFarms(fl);
-        if (fl.length > 0) setSelectedFarm(fl[0].id);
+        if (fl.length > 0) {
+          if (farmParam && fl.some(f => f.id === farmParam)) {
+            setSelectedFarm(farmParam);
+          } else {
+            setSelectedFarm(fl[0].id);
+          }
+        }
       })
       .catch(() => {});
 
@@ -261,5 +269,13 @@ export default function AiChatPage() {
       {/* Chat Input */}
       <ChatInput onSend={handleSend} disabled={typing} placeholder="سوال خود را بپرسید..." />
     </div>
+  );
+}
+
+export default function AiChatPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted">در حال بارگذاری…</p></div>}>
+      <AiChatInner />
+    </Suspense>
   );
 }
