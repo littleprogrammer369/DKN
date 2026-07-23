@@ -142,11 +142,9 @@ export default function FarmDetailPage() {
 
       <div className="card p-4">
         <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.push('/setup?edit=' + farm.id)}
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-green/40 bg-brand-green/5 hover:bg-brand-green/15 text-brand-green px-3 py-2 text-sm font-bold transition-colors"
-            aria-label="ویرایش مزرعه">
-            <Pencil size={15} /> ویرایش
-          </button>
+          <div className="shrink-0 w-12 h-12 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
+            <CropIcon size={22} />
+          </div>
           <div className="flex-1 min-w-0 text-right">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-extrabold text-gray-900 dark:text-white truncate">{farm.name}</h1>
@@ -158,9 +156,11 @@ export default function FarmDetailPage() {
             </div>
             <p className="text-sm text-gray-500 dark:text-night-muted truncate mt-0.5">{location || 'موقعیت ثبت نشده'}</p>
           </div>
-          <div className="shrink-0 w-12 h-12 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
-            <CropIcon size={22} />
-          </div>
+          <button type="button" onClick={() => router.push('/setup?edit=' + farm.id)}
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-green/40 bg-brand-green/5 hover:bg-brand-green/15 text-brand-green px-3 py-2 text-sm font-bold transition-colors"
+            aria-label="ویرایش مزرعه">
+            <Pencil size={15} /> ویرایش
+          </button>
         </div>
 
         <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-white/5 mt-4 pt-3 border-t border-gray-100 dark:border-white/5">
