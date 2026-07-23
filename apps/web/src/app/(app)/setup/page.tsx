@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
 import { CROPS } from '@/lib/crops';
@@ -13,6 +13,7 @@ import {
 import 'leaflet/dist/leaflet.css';
 import Dropdown from '@/components/Dropdown';
 import { toast } from '@/lib/toast';
+import { gregorianToJalaliParts } from '@/lib/jalali';
 
 // ── Dynamic Leaflet map (ssr:false) ──
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
@@ -20,16 +21,6 @@ const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), 
 const PolygonDrawer = dynamic(() => import('./PolygonDrawer'), { ssr: false });
 import { computePolygonMetrics } from './PolygonDrawer';
 import type { LatLng, PolygonMetrics } from './PolygonDrawer';
-
-// Small wrapper so useSearchParams is consumed inside a Suspense boundary
-function EditParam({ onEditId }: { onEditId: (id: string | null) => void }) {
-  const searchParams = useSearchParams();
-  onEditId(searchParams.get('edit'));
-  return null;
-}
-
-// We import useSearchParams here to avoid a second dynamic import
-import { useSearchParams } from 'next/navigation';
 
 // ── Iranian provinces ──
 const PROVINCES = [
@@ -50,9 +41,9 @@ const IRR_OPTIONS = [
   { value: 'SURFACE', label: 'سطحی' }, { value: 'SUBSURFACE', label: 'زیرزمینی' },
 ];
 
-export default function SetupPage() {
+function SetupPageInner() {
   const router = useRouter();
-  const [editId, setEditId] = useState<string | null>(null);
+  const editId = useSearchParams().get('edit');
   const [userName, setUserName] = useState('');
   const [farmName, setFarmName] = useState('');
   const [cropType, setCropType] = useState('');
@@ -73,14 +64,6 @@ export default function SetupPage() {
   const [center, setCenter] = useState<LatLng | null>(null);
   const [focus, setFocus] = useState<LatLng | null>(null);
   const [editing, setEditing] = useState(false);
-
-  /** Convert a Gregorian Date to Jalali year/month/day for prefill. */
-  const gregToJalali = (d: Date): { year: number; month: number; day: number } => {
-    const gy = d.getFullYear(), gm = d.getMonth() + 1, gd = d.getDate();
-    let jy = gy - 621, jm: number, jd = gd;
-    if (gm < 3 || (gm === 3 && gd < 21)) { jy--; jm = gm + 9; } else { jm = gm - 3; }
-    return { year: jy, month: jm, day: jd };
-  };
 
   const handleBoundaryChange = (pts: LatLng[], m: PolygonMetrics) => {
     setBoundary(pts);
@@ -123,7 +106,7 @@ export default function SetupPage() {
         setIrrigationType(farm.irrigationType || '');
         setCropType(farm.product || '');
         if (farm.cropDate) {
-          const j = gregToJalali(new Date(farm.cropDate));
+          const j = gregorianToJalaliParts(farm.cropDate);
           setCropYear(j.year); setCropMonth(j.month); setCropDay(j.day);
         }
         const pts: LatLng[] = (farm.boundary || []).map((p: any) => [p[0], p[1]]);
@@ -221,9 +204,6 @@ export default function SetupPage() {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <EditParam onEditId={setEditId} />
-      </Suspense>
       <div className="flex flex-col px-1">
       {/* ── Welcome header ── */}
       <div className="text-center mb-4 mt-4">
@@ -501,3 +481,11 @@ export default function SetupPage() {
   );
 }
 
+
+export default function SetupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SetupPageInner />
+    </Suspense>
+  );
+}

@@ -42,7 +42,7 @@ export class FarmsService {
       data: {
         userId: data.userId,
         name: data.name,
-        product: data.cropType || 'گندم',
+        product: data.cropType || 'wheat',
         province: data.province,
         city: data.city,
         areaHa: data.areaHa,

@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { ArrowRight, Pencil, MapPin, Calendar, CalendarClock, Droplet, Bug, Sparkles, Layers, Loader2 } from 'lucide-react';
 import { cropLabel, cropIcon } from '@/lib/crops';
 import SatelliteCard from '@/components/SatelliteCard';
+import { fa, formatJalali } from "@/lib/jalali";
 import SatelliteChart from '@/components/SatelliteChart';
 
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
@@ -15,43 +16,6 @@ const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
 const IRR_MAP: Record<string, string> = {
   DRIP: 'قطره‌ای', SPRINKLER: 'بارانی', SURFACE: 'سطحی', SUBSURFACE: 'زیرزمینی',
 };
-
-const FA_DIGITS = Array.from({ length: 10 }, (_, i) => String.fromCharCode(0x06f0 + i));
-const toFaDigits = (s: string) => s.replace(/\d/g, d => FA_DIGITS[+d]);
-
-const fa = (n: number | string | null | undefined): string => {
-  if (n == null || n === '') return '—';
-  const num = typeof n === 'number' ? n : parseFloat(String(n));
-  if (isNaN(num)) return '—';
-  return toFaDigits(num.toLocaleString('en-US', { maximumFractionDigits: 2 }))
-    .replace(/,/g, '٬').replace(/\./g, '٫');
-};
-
-function div(a: number, b: number) { return Math.trunc(a / b); }
-
-function g2j(gy: number, gm: number, gd: number) {
-  const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-  let jy = gy <= 1600 ? 0 : 979; gy -= gy <= 1600 ? 621 : 1600;
-  const gy2 = gm > 2 ? gy + 1 : gy;
-  let days = 365 * gy + div(gy2 + 3, 4) - div(gy2 + 99, 100) + div(gy2 + 399, 400) - 80 + gd + g_d_m[gm - 1];
-  jy += 33 * div(days, 12053); days %= 12053;
-  jy += 4 * div(days, 1461); days %= 1461;
-  if (days > 365) { jy += div(days - 1, 365); days = (days - 1) % 365; }
-  const jm = days < 186 ? 1 + div(days, 31) : 7 + div(days - 186, 30);
-  const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
-  return { jy, jm, jd };
-}
-
-const pad2 = (n: number) => String(n).padStart(2, '0');
-
-function formatJalali(iso?: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
-  const { jy, jm, jd } = g2j(d.getFullYear(), d.getMonth() + 1, d.getDate());
-  return toFaDigits(`${jy}/${pad2(jm)}/${pad2(jd)}`);
-}
-
 function MiniStat({ label, value, dot }: { label: string; value: string; dot?: string }) {
   return (
     <div className="flex-1 text-center px-1">

@@ -85,7 +85,7 @@ model Farm {
   id              String         @id @default(uuid()) @db.Uuid
   userId          String         @map("user_id") @db.Uuid
   name            String
-  product         String         @default("گندم")
+  product         String         @default("wheat")
   province        String?
   city            String?
   areaHa          Float?         @map("area_ha")
