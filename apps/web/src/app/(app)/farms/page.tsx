@@ -183,14 +183,18 @@ function FarmCard({
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu(); };
-    const onClose = () => closeMenu();
+    const onScroll = (e: Event) => {
+      if (menuRef.current && e.target instanceof Node && menuRef.current.contains(e.target)) return;
+      closeMenu();
+    };
+    const onResize = () => closeMenu();
     window.addEventListener('keydown', onKey);
-    window.addEventListener('scroll', onClose, true);
-    window.addEventListener('resize', onClose);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('scroll', onClose, true);
-      window.removeEventListener('resize', onClose);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
   }, [menuOpen]);
 
@@ -331,11 +335,15 @@ function CropFilter({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
-    const onClose = () => close();
+    const onScroll = (e: Event) => {
+      if (menuRef.current && e.target instanceof Node && menuRef.current.contains(e.target)) return;
+      close();
+    };
+    const onResize = () => close();
     window.addEventListener('keydown', onKey);
-    window.addEventListener('scroll', onClose, true);
-    window.addEventListener('resize', onClose);
-    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('scroll', onClose, true); window.removeEventListener('resize', onClose); };
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onResize); };
   }, [open]);
 
   const items = [{ value: 'all', label: 'همه محصولات' }, ...options.map(v => ({ value: v, label: cropLabel(v) }))];

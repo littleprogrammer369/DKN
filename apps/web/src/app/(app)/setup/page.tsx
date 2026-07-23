@@ -456,7 +456,7 @@ export default function SetupPage() {
         <div className="card p-5 space-y-5">
           <div>
             <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">تاریخ کشت</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2" dir="ltr">
               <div className="flex-1">
                 <Dropdown value={cropYear || ''} onChange={(v) => setCropYear(Number(v))} placeholder="سال"
                   options={years.map(y => ({ value: y, label: String(y) }))} />

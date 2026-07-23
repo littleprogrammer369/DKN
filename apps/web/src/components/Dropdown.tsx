@@ -35,14 +35,18 @@ export default function Dropdown({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
-    const onClose = () => close();
+    const onScroll = (e: Event) => {
+      if (menuRef.current && e.target instanceof Node && menuRef.current.contains(e.target)) return;
+      close();
+    };
+    const onResize = () => close();
     window.addEventListener('keydown', onKey);
-    window.addEventListener('scroll', onClose, true);
-    window.addEventListener('resize', onClose);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('scroll', onClose, true);
-      window.removeEventListener('resize', onClose);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
   }, [open]);
 
@@ -56,6 +60,7 @@ export default function Dropdown({
         type="button"
         onClick={(e) => { e.stopPropagation(); toggle(); }}
         className="input-glass flex items-center justify-between gap-2 text-right"
+        dir="rtl"
       >
         <span className={selected ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-night-muted'}>{label}</span>
         <ChevronDown size={16} className={`text-gray-400 dark:text-white/40 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -65,7 +70,8 @@ export default function Dropdown({
           <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); close(); }} />
           <div ref={menuRef}
             style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width }}
-            className="z-50 max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border text-right">
+            className="z-50 max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border text-right"
+            dir="rtl">
             {options.map(o => {
               const isSel = String(o.value) === String(value);
               return (
