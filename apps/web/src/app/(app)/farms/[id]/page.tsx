@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pencil, Loader2 } from 'lucide-react';
+import { cropLabel } from '@/lib/crops';
 
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
 
@@ -96,7 +97,7 @@ export default function FarmDetailPage() {
     </div>
 
     <div className="grid grid-cols-2 gap-3 mb-4">
-      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">محصول</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.product || 'گندم'}</div></div>
+      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">محصول</div><div className="text-sm font-bold text-gray-800 mt-1">{cropLabel(farm.product)}</div></div>
       <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ کشت</div><div className="text-sm font-bold text-gray-800 mt-1">{toJalali(farm.cropDate || '')}</div></div>
       <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع آبیاری</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.irrigationType ? irrMap[farm.irrigationType] || farm.irrigationType : '—'}</div></div>
       <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع خاک</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.soilType || '—'}</div></div>
@@ -110,7 +111,7 @@ export default function FarmDetailPage() {
           <div className="text-[9px] text-gray-500">مساحت (هکتار)</div>
         </div>
         <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
-          <div className="text-lg font-bold text-brand-green">{farm.product || 'گندم'}</div>
+          <div className="text-lg font-bold text-brand-green">{cropLabel(farm.product)}</div>
           <div className="text-[9px] text-gray-500">محصول</div>
         </div>
       </div>

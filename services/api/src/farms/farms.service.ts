@@ -36,12 +36,13 @@ export class FarmsService {
     irrigationType?: string;
     geojson?: any;
     boundary?: any;
+    cropType?: string;
   }) {
     return this.prisma.farm.create({
       data: {
         userId: data.userId,
         name: data.name,
-        product: 'گندم',
+        product: data.cropType || 'گندم',
         province: data.province,
         city: data.city,
         areaHa: data.areaHa,

@@ -3,10 +3,11 @@ import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { cropLabel, cropIcon } from '@/lib/crops';
 import {
-  Wheat, Sprout, TreePine, Pencil, Trash2, MoreVertical, Plus,
-  Check, AlertTriangle, Flower2, Eye, Sparkles, Droplet, Bug, Share2,
-  Search, X, ChevronLeft, ChevronRight
+  Wheat, Sprout, Pencil, Trash2, MoreVertical, Plus,
+  Check, AlertTriangle, Eye, Sparkles, Droplet, Bug, Share2,
+  Search, X, ChevronLeft, ChevronRight, ChevronDown
 } from 'lucide-react';
 
 /* ── Types ── */
@@ -23,24 +24,6 @@ interface Farm {
 }
 
 /* ── Helpers ── */
-const CROP_ICONS: Record<string, React.ElementType> = {
-  wheat: Wheat,
-  gandom: Wheat,
-  jo: Sprout,
-  barley: Sprout,
-  rice: Flower2,
-
-  corn: Sprout,
-  pistachio: TreePine,
-  saffron: Sprout,
-
-};
-
-function getCropIcon(product?: string) {
-  const key = (product || '').toLowerCase();
-  return CROP_ICONS[key] ?? Sprout;
-}
-
 function toPersianNum(n: number | undefined | null): string {
   if (n == null) return '--';
   return n.toLocaleString('fa-IR');
@@ -56,11 +39,6 @@ function computeHealth(farm: Farm): number {
   return farm.isActive ? 100 : 25;
 }
 
-const CROP_LABELS: Record<string, string> = {
-  wheat: 'گندم', gandom: 'گندم', barley: 'جو', jo: 'جو', rice: 'برنج',
-  corn: 'ذرت', pistachio: 'پسته', saffron: 'زعفران',
-};
-const cropLabel = (v: string) => CROP_LABELS[v.toLowerCase()] || v;
 
 /* ── Stat Card ── */
 function StatCard({
@@ -168,7 +146,7 @@ function FarmCard({
   onDelete: (f: Farm) => void;
 }) {
   const router = useRouter();
-  const CropIcon = getCropIcon(farm.product);
+  const CropIcon = cropIcon(farm.product);
   const health = computeHealth(farm);
   const healthColor =
     health >= 80
@@ -246,7 +224,7 @@ function FarmCard({
           <div>
             <div className="text-sm font-bold text-gray-800 dark:text-white">{farm.name}</div>
             <div className="text-[11px] text-gray-500 dark:text-white/60 mt-0.5">
-              {farm.product || 'گندم'} — {formatArea(farm.areaHa)}
+              {cropLabel(farm.product)} — {formatArea(farm.areaHa)}
             </div>
           </div>
         </div>
@@ -322,6 +300,74 @@ function FarmCard({
         </>,
         document.body,
       )}
+    </div>
+  );
+}
+
+/* ── Crop filter popover ── */
+function CropFilter({
+  value, onChange, options,
+}: { value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const close = () => { setOpen(false); setPos(null); };
+  const toggle = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) { setPos({ top: r.bottom + 4, left: r.left }); setOpen(o => !o); }
+  };
+  useLayoutEffect(() => {
+    if (!open || !menuRef.current || !pos) return;
+    const mh = menuRef.current.offsetHeight, mw = menuRef.current.offsetWidth;
+    let { top, left } = pos;
+    if (top + mh > window.innerHeight - 8) {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) top = Math.max(8, r.top - mh - 4);
+    }
+    if (left + mw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - mw - 8);
+    if (top !== pos.top || left !== pos.left) setPos({ top, left });
+  }, [open, pos]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    const onClose = () => close();
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onClose, true);
+    window.addEventListener('resize', onClose);
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('scroll', onClose, true); window.removeEventListener('resize', onClose); };
+  }, [open]);
+
+  const items = [{ value: 'all', label: 'همه محصولات' }, ...options.map(v => ({ value: v, label: cropLabel(v) }))];
+
+  return (
+    <div className="relative shrink-0">
+      <button ref={btnRef} type="button"
+        onClick={(e) => { e.stopPropagation(); toggle(); }}
+        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 dark:border-night-border text-gray-600 dark:text-night-muted hover:border-brand-green/50 whitespace-nowrap">
+        {value === 'all' ? 'همه محصولات' : cropLabel(value)}
+        <ChevronDown size={14} />
+      </button>
+      {open && pos && createPortal(
+        <>
+          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); close(); }} />
+          <div ref={menuRef}
+            style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: 168 }}
+            className="z-50 max-h-64 overflow-y-auto rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border text-right">
+            {items.map(it => (
+              <button key={it.value} type="button"
+                onClick={(e) => { e.stopPropagation(); onChange(it.value); close(); }}
+                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm transition-colors ${
+                  value === it.value
+                    ? 'text-brand-green bg-brand-green/10 font-bold'
+                    : 'text-gray-700 dark:text-night-text hover:bg-gray-50 dark:hover:bg-white/5'
+                }`}>
+                <span>{it.label}</span>
+                {value === it.value && <Check size={15} />}
+              </button>
+            ))}
+          </div>
+        </>, document.body)}
     </div>
   );
 }
@@ -431,7 +477,7 @@ export default function FarmsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         {([['all', 'همه'], ['healthy', 'سالم'], ['attention', 'نیاز به توجه']] as const).map(([k, label]) => (
           <button
             key={k}
@@ -446,14 +492,7 @@ export default function FarmsPage() {
           </button>
         ))}
         {cropOptions.length > 1 && (
-          <select
-            value={cropFilter}
-            onChange={(e) => setCropFilter(e.target.value)}
-            className="input-glass !py-1.5 !text-xs shrink-0 text-right"
-          >
-            <option value="all">همه محصولات</option>
-            {cropOptions.map(c => <option key={c} value={c}>{cropLabel(c)}</option>)}
-          </select>
+          <CropFilter value={cropFilter} onChange={setCropFilter} options={cropOptions} />
         )}
       </div>
 

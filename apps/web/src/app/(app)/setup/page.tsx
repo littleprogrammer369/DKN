@@ -4,9 +4,10 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { onlyDigits, getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
+import { CROPS } from '@/lib/crops';
 import {
   Sprout, Wheat, Loader2, Navigation,
-  TreePine, Flower2, ChevronRight, ChevronLeft,
+  ChevronRight, ChevronLeft,
   Trash2, Undo2,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -27,13 +28,6 @@ function EditParam({ onEditId }: { onEditId: (id: string | null) => void }) {
 
 // We import useSearchParams here to avoid a second dynamic import
 import { useSearchParams } from 'next/navigation';
-
-// ── Crop options ──
-const CROP_OPTIONS = [
-  { value: "wheat", label: "گندم", icon: Wheat },
-  { value: "barley", label: "جو", icon: Sprout },
-  { value: "rice", label: "برنج", icon: Flower2 },
-];
 
 // ── Iranian provinces ──
 const PROVINCES = [
@@ -258,7 +252,7 @@ export default function SetupPage() {
               نوع محصول *
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {CROP_OPTIONS.map((crop) => {
+              {CROPS.map((crop) => {
                 const Icon = crop.icon;
                 const isSelected = cropType === crop.value;
                 return (
