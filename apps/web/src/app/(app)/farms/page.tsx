@@ -419,7 +419,8 @@ export default function FarmsPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="جستجوی مزرعه، محصول یا شهر…"
-          className="input-glass w-full pr-10 pl-9 text-right"
+          style={{ paddingRight: '2.75rem', paddingLeft: '2.25rem' }}
+          className="input-glass w-full text-right"
         />
         {query && (
           <button onClick={() => setQuery('')} aria-label="پاک کردن"
