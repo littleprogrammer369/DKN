@@ -3,12 +3,93 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ArrowRight, Wheat, Sprout, Droplet, Bug, Sparkles, MapPin, Calendar, Pencil, Loader2 } from 'lucide-react';
-import { cropLabel } from '@/lib/crops';
+import { ArrowRight, Pencil, MapPin, Calendar, CalendarClock, Droplet, Bug, Sparkles, Layers, Loader2 } from 'lucide-react';
+import { cropLabel, cropIcon } from '@/lib/crops';
 import SatelliteCard from '@/components/SatelliteCard';
 import SatelliteChart from '@/components/SatelliteChart';
 
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false });
+
+// ── Helpers & tiny UI atoms ──────────────────────────────────────────
+
+const IRR_MAP: Record<string, string> = {
+  DRIP: 'قطره‌ای', SPRINKLER: 'بارانی', SURFACE: 'سطحی', SUBSURFACE: 'زیرزمینی',
+};
+
+const FA_DIGITS = Array.from({ length: 10 }, (_, i) => String.fromCharCode(0x06f0 + i));
+const toFaDigits = (s: string) => s.replace(/\d/g, d => FA_DIGITS[+d]);
+
+const fa = (n: number | string | null | undefined): string => {
+  if (n == null || n === '') return '—';
+  const num = typeof n === 'number' ? n : parseFloat(String(n));
+  if (isNaN(num)) return '—';
+  return toFaDigits(num.toLocaleString('en-US', { maximumFractionDigits: 2 }))
+    .replace(/,/g, '٬').replace(/\./g, '٫');
+};
+
+function div(a: number, b: number) { return Math.trunc(a / b); }
+
+function g2j(gy: number, gm: number, gd: number) {
+  const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  let jy = gy <= 1600 ? 0 : 979; gy -= gy <= 1600 ? 621 : 1600;
+  const gy2 = gm > 2 ? gy + 1 : gy;
+  let days = 365 * gy + div(gy2 + 3, 4) - div(gy2 + 99, 100) + div(gy2 + 399, 400) - 80 + gd + g_d_m[gm - 1];
+  jy += 33 * div(days, 12053); days %= 12053;
+  jy += 4 * div(days, 1461); days %= 1461;
+  if (days > 365) { jy += div(days - 1, 365); days = (days - 1) % 365; }
+  const jm = days < 186 ? 1 + div(days, 31) : 7 + div(days - 186, 30);
+  const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
+  return { jy, jm, jd };
+}
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+function formatJalali(iso?: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  const { jy, jm, jd } = g2j(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  return toFaDigits(`${jy}/${pad2(jm)}/${pad2(jd)}`);
+}
+
+function MiniStat({ label, value, dot }: { label: string; value: string; dot?: string }) {
+  return (
+    <div className="flex-1 text-center px-1">
+      <div className="flex items-center justify-center gap-1 text-base font-extrabold text-gray-900 dark:text-white">
+        {dot && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dot }} />}
+        <span className={value === '—' ? 'opacity-50' : ''}>{value}</span>
+      </div>
+      <div className="text-[11px] text-gray-500 dark:text-night-muted mt-0.5 truncate">{label}</div>
+    </div>
+  );
+}
+
+function SpecRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <span className="flex items-center gap-2 text-sm text-gray-500 dark:text-night-muted">
+        <span className="w-7 h-7 rounded-lg bg-brand-green/10 text-brand-green flex items-center justify-center">
+          <Icon size={15} />
+        </span>
+        {label}
+      </span>
+      <span className={`font-bold text-gray-900 dark:text-white ${value === '—' ? 'opacity-50' : ''}`}>{value}</span>
+    </div>
+  );
+}
+
+function ActionCard({ icon: Icon, title, sub, color, onClick }: { icon: any; title: string; sub: string; color: string; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      className="card flex flex-col items-center gap-1 p-3 text-center hover:border-brand-green/40 hover:scale-[1.02] transition-all">
+      <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: color + '1a', color }}>
+        <Icon size={18} />
+      </span>
+      <span className="text-xs font-bold text-gray-800 dark:text-white">{title}</span>
+      <span className="text-[10px] text-gray-500 dark:text-night-muted">{sub}</span>
+    </button>
+  );
+}
 
 interface Farm { id: string; name: string; product: string; city?: string; province?: string;
   areaHa?: number; soilType?: string; irrigationType?: string; cropDate?: string; createdAt: string;
@@ -44,105 +125,86 @@ export default function FarmDetailPage() {
   if (!farm) return <div className="text-center mt-12"><p className="text-red-500 dark:text-red-400 dark:text-red-400">مزرعه یافت نشد</p></div>;
 
   const location = [farm.city, farm.province].filter(Boolean).join('، ');
-  const irrMap: Record<string, string> = { DRIP: 'قطره‌ای', SPRINKLER: 'بارانی', SURFACE: 'سطحی', SUBSURFACE: 'زیرزمینی' };
+  const CropIcon = cropIcon(farm.product);
+  const ndvi = satellite?.ndvi ?? null;
+  const ndviColor = ndvi == null ? undefined : ndvi >= 0.6 ? '#16a34a' : ndvi >= 0.4 ? '#3b82f6' : ndvi >= 0.2 ? '#f59e0b' : '#ef4444';
 
-  const toJalali = (iso: string): string => {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '—';
-    const gy = d.getFullYear(), gm = d.getMonth() + 1, gd = d.getDate();
-    let jy = gy - 621, jm = gm + 3, jd = gd;
-    if (gm < 3 || (gm === 3 && gd < 21)) { jy--; jm = gm + 9; }
-    return jy + '/' + String(jm).padStart(2,'0') + '/' + String(jd).padStart(2,'0');
-  };
+  return (
+    <div className="space-y-4 pb-4">
+      {/* Back */}
 
-  return (<>
-    {/* ── Back ── */}
-    <button
-      type="button"
-      onClick={() => router.back()}
-      className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-4 hover:text-brand-green transition-colors"
-    >
-      <ArrowRight size={16} />
-      بازگشت
-    </button>
-
-    {/* ── Farm identity + edit (above the map) ── */}
-    <div className="flex items-center gap-3 mb-4">
-      {/* crop icon (appears on the right in RTL) */}
-      <div className="shrink-0 w-12 h-12 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
-        <Sprout size={22} />
-      </div>
-
-      {/* name + area chip + location (takes the remaining width, truncates instead of wrapping) */}
-      <div className="flex-1 min-w-0 text-right">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-extrabold text-gray-900 dark:text-white truncate">
-            {farm.name}
-          </h1>
-          {farm.areaHa != null && (
-            <span className="shrink-0 text-[11px] font-bold text-brand-green bg-brand-green/10 rounded-full px-2 py-0.5 whitespace-nowrap">
-              {farm.areaHa} هکتار
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 dark:text-night-muted truncate mt-0.5">
-          {location || 'موقعیت ثبت نشده'}
-        </p>
-      </div>
-
-      {/* edit pill (appears on the left in RTL) — fixed size, never stretched */}
-      <button
-        type="button"
-        onClick={() => router.push('/setup?edit=' + farm.id)}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-green/40 bg-brand-green/5 hover:bg-brand-green/15 text-brand-green px-3 py-2 text-sm font-bold transition-colors"
-        aria-label="ویرایش مزرعه"
-      >
-        <Pencil size={15} />
-        <span>ویرایش</span>
+      <button type="button" onClick={() => router.back()}
+        className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-4 hover:text-brand-green transition-colors">
+        <ArrowRight size={16} /> بازگشت
       </button>
-    </div>
 
-    <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-night-border mb-4">
-      <FarmMap
-        name={farm.name}
-        center={farm.lat != null && farm.lng != null ? [farm.lat, farm.lng] : null}
-        boundary={farm.boundary ?? null}
-      />
-    </div>
+      {/* Hero */}
 
-    <div className="grid grid-cols-2 gap-3 mb-4">
-      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">محصول</div><div className="text-sm font-bold text-gray-800 mt-1">{cropLabel(farm.product)}</div></div>
-      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ کشت</div><div className="text-sm font-bold text-gray-800 mt-1">{toJalali(farm.cropDate || '')}</div></div>
-      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع آبیاری</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.irrigationType ? irrMap[farm.irrigationType] || farm.irrigationType : '—'}</div></div>
-      <div className="card text-center !mb-0"><div className="text-xs text-gray-500 dark:text-night-muted">نوع خاک</div><div className="text-sm font-bold text-gray-800 mt-1">{farm.soilType || '—'}</div></div>
-    </div>
+      <div className="card p-4">
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => router.push('/setup?edit=' + farm.id)}
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-green/40 bg-brand-green/5 hover:bg-brand-green/15 text-brand-green px-3 py-2 text-sm font-bold transition-colors"
+            aria-label="ویرایش مزرعه">
+            <Pencil size={15} /> ویرایش
+          </button>
+          <div className="flex-1 min-w-0 text-right">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-extrabold text-gray-900 dark:text-white truncate">{farm.name}</h1>
+              {farm.areaHa != null && (
+                <span className="shrink-0 text-[11px] font-bold text-brand-green bg-brand-green/10 rounded-full px-2 py-0.5 whitespace-nowrap">
+                  {fa(farm.areaHa)} هکتار
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-night-muted truncate mt-0.5">{location || 'موقعیت ثبت نشده'}</p>
+          </div>
+          <div className="shrink-0 w-12 h-12 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
+            <CropIcon size={22} />
+          </div>
+        </div>
 
-      {/* ── Satellite monitoring ── */}
-      <div className="space-y-3 mb-4">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-white/5 mt-4 pt-3 border-t border-gray-100 dark:border-white/5">
+          <MiniStat label="مساحت (هکتار)" value={fa(farm.areaHa)} />
+          <MiniStat label="محصول" value={cropLabel(farm.product)} />
+          <MiniStat label="شاخص NDVI" value={ndvi == null ? '—' : fa(ndvi)} dot={ndviColor} />
+        </div>
+      </div>
+
+      {/* Map */}
+
+      <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-night-border">
+        <FarmMap name={farm.name}
+          center={farm.lat != null && farm.lng != null ? [farm.lat, farm.lng] : null}
+          boundary={farm.boundary ?? null} />
+      </div>
+
+      {/* Quick actions (farm-scoped) */}
+
+      <div className="grid grid-cols-3 gap-2">
+        <ActionCard icon={Droplet} title="آبیاری" sub="برنامه و ثبت" color="#0ea5e9" onClick={() => router.push('/irrigation?farm=' + farm.id)} />
+        <ActionCard icon={Bug} title="آفات" sub="گزارش و ریسک" color="#f59e0b" onClick={() => router.push('/pests?farm=' + farm.id)} />
+        <ActionCard icon={Sparkles} title="مشاوره AI" sub="پرسش هوشمند" color="#16a34a" onClick={() => router.push('/ai?farm=' + farm.id)} />
+      </div>
+
+      {/* Spec list — high contrast values */}
+
+      <div className="card p-4">
+        <h2 className="font-bold text-gray-900 dark:text-white text-right mb-1">اطلاعات مزرعه</h2>
+        <div className="divide-y divide-gray-100 dark:divide-white/5">
+          <SpecRow icon={Calendar} label="تاریخ کشت" value={formatJalali(farm.cropDate)} />
+          <SpecRow icon={Droplet} label="روش آبیاری" value={farm.irrigationType ? (IRR_MAP[farm.irrigationType] || farm.irrigationType) : '—'} />
+          <SpecRow icon={Layers} label="نوع خاک" value={farm.soilType || '—'} />
+          <SpecRow icon={MapPin} label="موقعیت" value={location || '—'} />
+          <SpecRow icon={CalendarClock} label="تاریخ ثبت" value={formatJalali(farm.createdAt)} />
+        </div>
+      </div>
+
+      {/* Satellite */}
+
+      <div className="space-y-3">
         <SatelliteCard data={satellite} />
         <SatelliteChart data={satHistory} />
       </div>
-
-    <div className="card mb-4">
-      <div className="text-xs font-bold mb-3">معیارهای مزرعه</div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
-          <div className="text-lg font-bold text-brand-green">{farm.areaHa || '--'}</div>
-          <div className="text-[9px] text-gray-500">مساحت (هکتار)</div>
-        </div>
-        <div className="bg-green-50/50 dark:bg-night-surface rounded-xl p-2 text-center">
-          <div className="text-lg font-bold text-brand-green">{cropLabel(farm.product)}</div>
-          <div className="text-[9px] text-gray-500">محصول</div>
-        </div>
-      </div>
     </div>
-
-    <div className="flex gap-2 mb-4">
-      <button onClick={() => router.push('/irrigation?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Droplet size={14} /> آبیاری</button>
-      <button onClick={() => router.push('/pests?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Bug size={14} /> آفات</button>
-      <button onClick={() => router.push('/ai?farm=' + farm.id)} className="btn-outline flex-1 !text-xs flex items-center justify-center gap-1"><Sparkles size={14} /> مشاوره AI</button>
-    </div>
-<div className="card"><div className="text-xs text-gray-500 dark:text-night-muted">تاریخ ثبت</div><div className="text-sm font-bold text-gray-700 mt-1">{toJalali(farm.createdAt)}</div></div>
-  </>);
+  );
 }
