@@ -41,20 +41,49 @@ export default function FarmDetailPage() {
   };
 
   return (<>
-    <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-3"><ArrowRight size={16} /> بازگشت</button>
+    {/* ── Back ── */}
+    <button
+      type="button"
+      onClick={() => router.back()}
+      className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-night-muted mb-4 hover:text-brand-green transition-colors"
+    >
+      <ArrowRight size={16} />
+      بازگشت
+    </button>
 
+    {/* ── Farm identity + edit (above the map) ── */}
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center"><Sprout className="text-green-600" size={22} /></div>
-      <div className="flex-1">
-        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">{farm.name}</h1>
-        <p className="text-xs text-gray-400 dark:text-night-muted">{location || 'موقعیت ثبت نشده'}{farm.areaHa ? ' · ' + String(farm.areaHa) + ' هکتار' : ''}</p>
+      {/* crop icon (appears on the right in RTL) */}
+      <div className="shrink-0 w-12 h-12 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center">
+        <Sprout size={22} />
       </div>
+
+      {/* name + area chip + location (takes the remaining width, truncates instead of wrapping) */}
+      <div className="flex-1 min-w-0 text-right">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-extrabold text-gray-900 dark:text-white truncate">
+            {farm.name}
+          </h1>
+          {farm.areaHa != null && (
+            <span className="shrink-0 text-[11px] font-bold text-brand-green bg-brand-green/10 rounded-full px-2 py-0.5 whitespace-nowrap">
+              {farm.areaHa} هکتار
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 dark:text-night-muted truncate mt-0.5">
+          {location || 'موقعیت ثبت نشده'}
+        </p>
+      </div>
+
+      {/* edit pill (appears on the left in RTL) — fixed size, never stretched */}
       <button
         type="button"
         onClick={() => router.push('/setup?edit=' + farm.id)}
-        className="btn-outline w-auto shrink-0 !py-1.5 !px-3 !text-xs flex items-center gap-1"
+        className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-brand-green/40 bg-brand-green/5 hover:bg-brand-green/15 text-brand-green px-3 py-2 text-sm font-bold transition-colors"
+        aria-label="ویرایش مزرعه"
       >
-        <Pencil size={14} /> ویرایش
+        <Pencil size={15} />
+        <span>ویرایش</span>
       </button>
     </div>
 
