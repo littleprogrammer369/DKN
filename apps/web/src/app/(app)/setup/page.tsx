@@ -6,11 +6,13 @@ import dynamic from 'next/dynamic';
 import { getJalaliToday, jalaliToGregorian, JALALI_MONTHS } from '@/lib/utils';
 import { CROPS } from '@/lib/crops';
 import {
-  Sprout, Wheat, Loader2, Navigation,
+  Sprout, Wheat, Loader2, Navigation, LocateFixed,
   ChevronRight, ChevronLeft,
   Trash2, Undo2,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import Dropdown from '@/components/Dropdown';
+import { toast } from '@/lib/toast';
 
 // ── Dynamic Leaflet map (ssr:false) ──
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
@@ -37,6 +39,15 @@ const PROVINCES = [
   'کردستان', 'زنجان', 'قزوین', 'سمنان', 'آذربایجان غربی', 'کرمانشاه',
   'کهگیلویه و بویراحمد', 'ایلام', 'چهارمحال و بختیاری', 'خراسان شمالی',
   'خراسان جنوبی', 'اردبیل',
+];
+
+const SOIL_OPTIONS = [
+  { value: 'رسی', label: 'رسی' }, { value: 'لومی', label: 'لومی' },
+  { value: 'سیلتی', label: 'سیلتی' }, { value: 'مخلوط', label: 'مخلوط' },
+];
+const IRR_OPTIONS = [
+  { value: 'DRIP', label: 'قطره‌ای' }, { value: 'SPRINKLER', label: 'بارانی' },
+  { value: 'SURFACE', label: 'سطحی' }, { value: 'SUBSURFACE', label: 'زیرزمینی' },
 ];
 
 export default function SetupPage() {
@@ -143,19 +154,14 @@ export default function SetupPage() {
     });
   }, []);
 
-  const handleGeolocation = () => {
+  const locate = () => {
     setGeoLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setFocus([pos.coords.latitude, pos.coords.longitude]);
-          setGeoLoading(false);
-        },
-        () => setGeoLoading(false),
-      );
-    } else {
-      setGeoLoading(false);
-    }
+    if (!navigator.geolocation) { toast.error('مرورگر از موقعیت‌یاب پشتیبانی نمی‌کند.'); setGeoLoading(false); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setFocus([pos.coords.latitude, pos.coords.longitude]); toast.success('موقعیت شما روی نقشه اعمال شد 📍'); setGeoLoading(false); },
+      () => { toast.error('دسترسی به موقعیت مکانی داده نشد.'); setGeoLoading(false); },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
   };
 
   const handleCreate = async () => {
@@ -191,7 +197,7 @@ export default function SetupPage() {
 
   const Stepper = () => (
     <div className="mb-5">
-      <div className="flex items-center justify-center" dir="ltr">
+      <div className="flex items-center justify-center">
         {[1, 2, 3].map((s, i) => (
           <div key={s} className="flex items-center">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
@@ -327,16 +333,8 @@ export default function SetupPage() {
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">استان <span className="text-red-500">*</span></label>
-              <select
-                value={province}
-                onChange={e => setProvince(e.target.value)}
-                className="input-glass text-right"
-              >
-                <option value="">انتخاب استان</option>
-                {PROVINCES.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
+              <Dropdown value={province || ''} onChange={(v) => setProvince(String(v))} placeholder="انتخاب استان"
+                options={PROVINCES.map(p => ({ value: p, label: p }))} />
             </div>
           </div>
 
@@ -349,9 +347,15 @@ export default function SetupPage() {
               روی گوشه‌های زمین ضربه بزن تا محدوده مشخص شود (حداقل ۳ نقطه).
             </p>
 
-            <div className="bg-gray-100 dark:bg-night-surface border border-gray-200 dark:border-night-border rounded-xl overflow-hidden h-64 mb-2">
+            <div className="relative bg-gray-100 dark:bg-night-surface border border-gray-200 dark:border-night-border rounded-xl overflow-hidden h-64 mb-2">
               {typeof window !== 'undefined' ? (
-                <MapContainer
+                <>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); locate(); }}
+                    className="absolute top-2 right-2 z-[1100] w-9 h-9 rounded-lg bg-white dark:bg-night-card shadow-md border border-gray-200 dark:border-night-border text-brand-green flex items-center justify-center hover:scale-105 transition-transform"
+                    aria-label="موقعیت من">
+                    {geoLoading ? <Loader2 size={18} className="animate-spin" /> : <LocateFixed size={18} />}
+                  </button>
+                  <MapContainer
                   center={[32.4279, 53.6880]}
                   zoom={5}
                   className="w-full h-full z-0"
@@ -367,6 +371,7 @@ export default function SetupPage() {
                     focus={focus}
                   />
                 </MapContainer>
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-night-muted text-sm">
                   <Loader2 size={24} className="animate-spin" />
@@ -396,7 +401,7 @@ export default function SetupPage() {
               </button>
               <button
                 type="button"
-                onClick={handleGeolocation}
+                onClick={locate}
                 disabled={geoLoading}
                 className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1"
               >
@@ -450,39 +455,31 @@ export default function SetupPage() {
       {step === 3 && (
         <div className="card p-5 space-y-5">
           <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">تاریخ کشت (شمسی)</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">تاریخ کشت</label>
             <div className="flex gap-2">
-              <select value={cropYear} onChange={e => setCropYear(Number(e.target.value))} className="input-glass flex-1 text-center">
-                <option value="0">سال</option>
-                {years.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select value={cropMonth} onChange={e => setCropMonth(Number(e.target.value))} className="input-glass flex-1 text-center">
-                <option value="0">ماه</option>
-                {JALALI_MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-              </select>
-              <select value={cropDay} onChange={e => setCropDay(Number(e.target.value))} className="input-glass flex-1 text-center">
-                <option value="0">روز</option>
-                {days.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <div className="flex-1">
+                <Dropdown value={cropYear || ''} onChange={(v) => setCropYear(Number(v))} placeholder="سال"
+                  options={years.map(y => ({ value: y, label: String(y) }))} />
+              </div>
+              <div className="flex-1">
+                <Dropdown value={cropMonth || ''} onChange={(v) => setCropMonth(Number(v))} placeholder="ماه"
+                  options={JALALI_MONTHS.map((m, i) => ({ value: i + 1, label: m }))} />
+              </div>
+              <div className="flex-1">
+                <Dropdown value={cropDay || ''} onChange={(v) => setCropDay(Number(v))} placeholder="روز"
+                  options={days.map(d => ({ value: d, label: String(d) }))} />
+              </div>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">نوع خاک</label>
-            <select value={soilType} onChange={e => setSoilType(e.target.value)} className="input-glass text-right">
-              <option value="">انتخاب کنید</option>
-              <option value="رسی">رسی</option><option value="شنی">شنی</option><option value="لومی">لومی</option>
-              <option value="سیلتی">سیلتی</option><option value="مخلوط">مخلوط</option>
-            </select>
+            <Dropdown value={soilType || ''} onChange={(v) => setSoilType(String(v))} placeholder="انتخاب کنید" options={SOIL_OPTIONS} />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-700 dark:text-night-text mb-2 text-right">روش آبیاری</label>
-            <select value={irrigationType} onChange={e => setIrrigationType(e.target.value)} className="input-glass text-right">
-              <option value="">انتخاب کنید</option>
-              <option value="DRIP">قطره‌ای</option><option value="SPRINKLER">بارانی</option>
-              <option value="SURFACE">سطحی</option><option value="SUBSURFACE">زیرزمینی</option>
-            </select>
+            <Dropdown value={irrigationType || ''} onChange={(v) => setIrrigationType(String(v))} placeholder="انتخاب کنید" options={IRR_OPTIONS} />
           </div>
 
           {error && <div className="text-sm text-red-500 text-center mb-3">{error}</div>}
