@@ -147,7 +147,7 @@ function AiChatInner() {
 
       <div className="card p-2 mt-2 flex items-end gap-2">
         <button onClick={()=>handleSend()} disabled={!input.trim()||typing} className="shrink-0 w-10 h-10 rounded-xl bg-brand-green text-white flex items-center justify-center disabled:opacity-40">{typing?<Loader2 size={18} className="animate-spin"/>:<Send size={18}/>}</button>
-        <textarea ref={taRef} value={input} onChange={grow} onKeyDown={onKey} rows={1} placeholder="سوال خود را بپرسید… (Enter ارسال، Shift+Enter خط جدید)" className="flex-1 resize-none bg-transparent outline-none text-right text-sm py-2 px-1 max-h-32 text-gray-900 dark:text-white placeholder:text-gray-400"/>
+        <textarea ref={taRef} value={input} onChange={grow} onKeyDown={onKey} rows={1} placeholder="سوال خود را بپرسید…" className="flex-1 resize-none bg-transparent outline-none text-right text-sm py-2 px-1 max-h-32 text-gray-900 dark:text-white placeholder:text-gray-400"/>
       </div>
     </div>
   );
