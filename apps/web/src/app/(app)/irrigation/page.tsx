@@ -1,14 +1,16 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Droplet, Cloud, CloudRain, CloudLightning, Snowflake, Plus, History, Sparkles, Loader2, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Droplet, Cloud, CloudRain, CloudLightning, Snowflake, Sun, Plus, History, Sparkles, Loader2, X } from 'lucide-react';
 import Dropdown from '@/components/Dropdown';
 import { toast } from '@/lib/toast';
 import { fa } from '@/lib/jalali';
+import { jalaliToGregorian, JALALI_MONTHS, getJalaliToday } from '@/lib/utils';
 
 function wmoIcon(code?: number | null) {
   if (code == null) return Cloud;
-  if (code <= 1) return Cloud;
+  if (code <= 1) return Sun;
   if (code <= 48) return Cloud;
   if (code <= 57) return CloudRain;
   if (code <= 67 || (code >= 80 && code <= 82)) return CloudRain;
@@ -24,23 +26,40 @@ const methodLabel = (v?: string | null) => METHOD_OPTIONS.find(m => m.value === 
 function LogModal({ open, onClose, onCreate, initial }: any) {
   const [amount, setAmount] = useState(''); const [duration, setDuration] = useState('');
   const [method, setMethod] = useState('DRIP'); const [notes, setNotes] = useState('');
-  const [scheduled, setScheduled] = useState(''); const [busy, setBusy] = useState(false);
+  const [sYear, setSYear] = useState<any>(''); const [sMonth, setSMonth] = useState<any>(''); const [sDay, setSDay] = useState<any>('');
+  const [sHour, setSHour] = useState<any>(''); const [sMin, setSMin] = useState<any>('');
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (open) {
       setAmount(initial?.amount != null ? String(initial.amount) : '');
       setDuration(initial?.duration != null ? String(initial.duration) : '');
-      setMethod(initial?.method || 'DRIP'); setNotes(''); setScheduled('');
+      setMethod(initial?.method || 'DRIP'); setNotes('');
+      setSYear(''); setSMonth(''); setSDay(''); setSHour(''); setSMin('');
     }
   }, [open, initial]);
   if (!open) return null;
+
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  const jt = getJalaliToday();
+  const yearOpts = Array.from({ length: 5 }, (_, i) => jt.year - 1 + i).map(y => ({ value: y, label: fa(y) }));
+  const monthOpts = JALALI_MONTHS.map((m, i) => ({ value: i + 1, label: m }));
+  const dayOpts = Array.from({ length: 31 }, (_, i) => i + 1).map(d => ({ value: d, label: fa(d) }));
+  const hourOpts = Array.from({ length: 24 }, (_, i) => i).map(h => ({ value: h, label: fa(p2(h)) }));
+  const minOpts = Array.from({ length: 12 }, (_, i) => i * 5).map(m => ({ value: m, label: fa(p2(m)) }));
+
+  // scheduled is empty (= apply now) unless a full شمسی date is chosen
+  const scheduled = (sYear && sMonth && sDay)
+    ? `${jalaliToGregorian(Number(sYear), Number(sMonth), Number(sDay)).toISOString().slice(0, 10)}T${p2(sHour !== '' ? Number(sHour) : 0)}:${p2(sMin !== '' ? Number(sMin) : 0)}`
+    : '';
+
   const submit = async () => {
     setBusy(true);
     try { await onCreate({ amount: amount ? Number(amount) : null, duration: duration ? Number(duration) : null, method, notes: notes || undefined, scheduledAt: scheduled || undefined }); onClose(); }
     finally { setBusy(false); }
   };
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/50" onClick={onClose}>
-      <div className="card w-full max-w-md p-5 space-y-4" onClick={e => e.stopPropagation()}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60" onClick={onClose}>
+      <div className="card w-full max-w-md max-h-[88vh] overflow-y-auto p-5 space-y-4 my-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white/70"><X size={18} /></button>
           <h3 className="font-bold text-gray-900 dark:text-white">ثبت آبیاری</h3>
@@ -50,11 +69,30 @@ function LogModal({ open, onClose, onCreate, initial }: any) {
           <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">مدت (دقیقه)</label><input value={duration} onChange={e => setDuration(e.target.value.replace(/[^\d]/g, ''))} inputMode="numeric" className="input-glass text-right" placeholder="مثلاً 30" /></div>
         </div>
         <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">روش آبیاری</label><Dropdown value={method} onChange={v => setMethod(String(v))} options={METHOD_OPTIONS} /></div>
-        <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">زمان برنامه‌ریزی (اختیاری)</label><input type="datetime-local" value={scheduled} onChange={e => setScheduled(e.target.value)} className="input-glass text-right" /></div>
+
+        {/* برنامه‌ریزی — تاریخ شمسی + ساعت (همه Dropdown، بدون کنترل بومی) */}
+        <div>
+          <label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">تاریخ برنامه‌ریزی (شمسی) — اختیاری</label>
+          <div className="grid grid-cols-3 gap-2">
+            <Dropdown value={sYear}  onChange={setSYear}  options={yearOpts}  placeholder="سال" />
+            <Dropdown value={sMonth} onChange={setSMonth} options={monthOpts} placeholder="ماه" />
+            <Dropdown value={sDay}   onChange={setSDay}   options={dayOpts}   placeholder="روز" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">ساعت برنامه‌ریزی — اختیاری</label>
+          <div className="grid grid-cols-2 gap-2">
+            <Dropdown value={sHour} onChange={setSHour} options={hourOpts} placeholder="ساعت" />
+            <Dropdown value={sMin}  onChange={setSMin}  options={minOpts}  placeholder="دقیقه" />
+          </div>
+        </div>
+        <p className="text-[11px] text-gray-400 dark:text-night-muted text-right">اگر تاریخ شمسی را پر کنی، آبیاری به‌جای ثبت آنی، برای آن زمان برنامه‌ریزی می‌شود.</p>
+
         <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">یادداشت (اختیاری)</label><input value={notes} onChange={e => setNotes(e.target.value)} className="input-glass text-right" placeholder="مثلاً بعد از کوددهی" /></div>
         <button onClick={submit} disabled={busy} className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50">{busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}{scheduled ? 'برنامه‌ریزی آبیاری' : 'ثبت آبیاری'}</button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 function IrrigationInner() {

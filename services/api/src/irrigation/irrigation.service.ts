@@ -5,26 +5,31 @@ import { PrismaService } from '../prisma.service';
 export class IrrigationService {
   constructor(private prisma: PrismaService) {}
 
+  private boundaryCentroid(boundary: any): { lat: number; lng: number } | null {
+    if (!Array.isArray(boundary) || boundary.length < 3) return null;
+    let lat = 0, lng = 0, n = 0;
+    for (const p of boundary) {
+      if (Array.isArray(p) && p.length >= 2 && typeof p[0] === 'number' && typeof p[1] === 'number') { lat += p[0]; lng += p[1]; n++; }
+    }
+    return n ? { lat: lat / n, lng: lng / n } : null;
+  }
   private coordsFromGeojson(geojson: any): { lat: number; lng: number } | null {
     if (!geojson) return null;
     try {
-      const coords = geojson.type === 'Polygon'
-        ? geojson.coordinates?.[0]
-        : geojson.type === 'MultiPolygon'
-          ? geojson.coordinates?.[0]?.[0]
-          : null;
+      const coords = geojson.type === 'Polygon' ? geojson.coordinates?.[0]
+        : geojson.type === 'MultiPolygon' ? geojson.coordinates?.[0]?.[0] : null;
       if (coords && Array.isArray(coords) && coords.length > 0) {
         const sum = coords.reduce((acc: [number, number], c: number[]) => [acc[0] + c[0], acc[1] + c[1]], [0, 0]);
         return { lng: sum[0] / coords.length, lat: sum[1] / coords.length };
       }
-      if (geojson.type === 'Point' && Array.isArray(geojson.coordinates)) {
-        return { lng: geojson.coordinates[0], lat: geojson.coordinates[1] };
-      }
+      if (geojson.type === 'Point' && Array.isArray(geojson.coordinates)) return { lng: geojson.coordinates[0], lat: geojson.coordinates[1] };
     } catch { /* ignore */ }
     return null;
   }
-
-  private async coordsFor(farm: any) {
+  private async coordsFor(farm: any): Promise<{ lat: number; lng: number } | null> {
+    const fromBoundary = this.boundaryCentroid(farm?.boundary);
+    if (fromBoundary) return fromBoundary;
+    if (farm?.lat != null && farm?.lng != null) return { lat: farm.lat, lng: farm.lng };
     const fromGeo = this.coordsFromGeojson(farm?.geojson);
     if (fromGeo) return fromGeo;
     const city = farm?.city || farm?.province;
