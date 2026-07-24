@@ -67,10 +67,10 @@ export default function Dropdown({
       </button>
       {open && pos && createPortal(
         <>
-          <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); close(); }} />
+          <div className="fixed inset-0 z-[110]" onClick={(e) => { e.stopPropagation(); close(); }} />
           <div ref={menuRef}
             style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width }}
-            className="z-50 max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border text-right"
+            className="z-[120] max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-night-card shadow-xl border border-gray-200 dark:border-night-border text-right"
             dir="rtl">
             {options.map(o => {
               const isSel = String(o.value) === String(value);
