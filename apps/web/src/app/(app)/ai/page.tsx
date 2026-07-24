@@ -60,6 +60,8 @@ function AiChatInner() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const STORAGE_KEY = 'dkn-ai-chat';
   const STORAGE_ALL_KEY = 'dkn-ai-all-history';
+  const q = searchParams.get('q');
+  const autoSentRef = useRef(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -120,6 +122,15 @@ function AiChatInner() {
         setLoadingHistory(false);
       });
   }, [router]);
+
+  // Auto-send irrigation question when ?q=irrigation
+  useEffect(() => {
+    if (!loadingHistory && q === 'irrigation' && !autoSentRef.current && messages.length <= 1) {
+      autoSentRef.current = true;
+      const msg = 'بهترین زمان و مقدار آبیاری برای این مزرعه را با توجه به هوا پیشنهاد بده.';
+      handleSend(msg);
+    }
+  }, [loadingHistory, q]);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typing]);
 

@@ -1,169 +1,192 @@
 'use client';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Droplet, Cloud, CloudRain, CloudLightning, Snowflake, Plus, History, Sparkles, Loader2, X } from 'lucide-react';
+import Dropdown from '@/components/Dropdown';
+import { toast } from '@/lib/toast';
+import { fa } from '@/lib/jalali';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Droplet, CloudRain, Sun, Cloud, Calendar, Plus, History, Sparkles, Wind, Thermometer, AlertTriangle, Loader2 } from 'lucide-react';
-
-export default function IrrigationPage() {
+function wmoIcon(code?: number | null) {
+  if (code == null) return Cloud;
+  if (code <= 1) return Cloud;
+  if (code <= 48) return Cloud;
+  if (code <= 57) return CloudRain;
+  if (code <= 67 || (code >= 80 && code <= 82)) return CloudRain;
+  if ((code >= 71 && code <= 77) || code >= 85) return Snowflake;
+  if (code >= 95) return CloudLightning;
+  return Cloud;
+}
+const METHOD_OPTIONS = [
+  { value: 'DRIP', label: 'قطره\u200cای' }, { value: 'SPRINKLER', label: 'بارانی' },
+  { value: 'SURFACE', label: 'سطحی' }, { value: 'SUBSURFACE', label: 'زیرزمینی' },
+];
+const methodLabel = (v?: string | null) => METHOD_OPTIONS.find(m => m.value === v)?.label || v || '\u2014';
+function LogModal({ open, onClose, onCreate, initial }: any) {
+  const [amount, setAmount] = useState(''); const [duration, setDuration] = useState('');
+  const [method, setMethod] = useState('DRIP'); const [notes, setNotes] = useState('');
+  const [scheduled, setScheduled] = useState(''); const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setAmount(initial?.amount != null ? String(initial.amount) : '');
+      setDuration(initial?.duration != null ? String(initial.duration) : '');
+      setMethod(initial?.method || 'DRIP'); setNotes(''); setScheduled('');
+    }
+  }, [open, initial]);
+  if (!open) return null;
+  const submit = async () => {
+    setBusy(true);
+    try { await onCreate({ amount: amount ? Number(amount) : null, duration: duration ? Number(duration) : null, method, notes: notes || undefined, scheduledAt: scheduled || undefined }); onClose(); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/50" onClick={onClose}>
+      <div className="card w-full max-w-md p-5 space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white/70"><X size={18} /></button>
+          <h3 className="font-bold text-gray-900 dark:text-white">ثبت آبیاری</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">حجم آب (مترمکعب)</label><input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" className="input-glass text-right" placeholder="مثلاً 12" /></div>
+          <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">مدت (دقیقه)</label><input value={duration} onChange={e => setDuration(e.target.value.replace(/[^\d]/g, ''))} inputMode="numeric" className="input-glass text-right" placeholder="مثلاً 30" /></div>
+        </div>
+        <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">روش آبیاری</label><Dropdown value={method} onChange={v => setMethod(String(v))} options={METHOD_OPTIONS} /></div>
+        <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">زمان برنامه‌ریزی (اختیاری)</label><input type="datetime-local" value={scheduled} onChange={e => setScheduled(e.target.value)} className="input-glass text-right" /></div>
+        <div><label className="block text-xs font-bold text-gray-600 dark:text-night-muted mb-1 text-right">یادداشت (اختیاری)</label><input value={notes} onChange={e => setNotes(e.target.value)} className="input-glass text-right" placeholder="مثلاً بعد از کوددهی" /></div>
+        <button onClick={submit} disabled={busy} className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50">{busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}{scheduled ? 'برنامه‌ریزی آبیاری' : 'ثبت آبیاری'}</button>
+      </div>
+    </div>
+  );
+}
+function IrrigationInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const farmParam = searchParams.get('farm');
   const [farms, setFarms] = useState<any[]>([]);
-  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [farmId, setFarmId] = useState('');
+  const [dash, setDash] = useState<any>(null);
+  const [rec, setRec] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const headers = { Authorization: 'Bearer ' + (typeof localStorage !== 'undefined' ? localStorage.getItem('token') : '') };
+
+  const loadFarmData = (id: string) => Promise.all([
+    fetch('/api/v1/weather/' + id + '/dashboard', { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('/api/v1/irrigation/recommend/' + id, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('/api/v1/irrigation/history/' + id, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+  ]).then(([d, rc, h]) => { setDash(d); setRec(rc); setHistory(Array.isArray(h) ? h : []); setLoading(false); });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { router.push('/'); return; }
-    fetch('/api/v1/farms', { headers: { Authorization: 'Bearer ' + token } })
-      .then(r => r.json())
-      .then(async (allFarms) => {
-        const farmList = Array.isArray(allFarms) ? allFarms : [];
-        setFarms(farmList);
-        if (farmList.length > 0) {
-          const mainFarm = farmList[0];
-          try {
-            const res = await fetch(`/api/v1/weather/${mainFarm.id}/dashboard?city=${encodeURIComponent(mainFarm.city || 'ساوه')}`, {
-              headers: { Authorization: 'Bearer ' + token }
-            });
-            if (res.ok) { const data = await res.json(); setDashboardData(data); }
-          } catch {}
-        }
-        setLoading(false);
-      }).catch(() => setLoading(false));
-  }, [router]);
+    fetch('/api/v1/farms', { headers }).then(r => r.json()).then((all: any) => {
+      const list = Array.isArray(all) ? all : []; setFarms(list);
+      const initial = (farmParam && list.some((f: any) => f.id === farmParam)) ? farmParam : (list[0]?.id || '');
+      setFarmId(initial);
+      if (initial) loadFarmData(initial); else setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [router, farmParam]);
 
-  if (loading) return <div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted text-sm"><Loader2 className="animate-spin" size={16} /></p></div>;
+  const createLog = async (body: any) => {
+    try {
+      const res = await fetch('/api/v1/irrigation/log/' + farmId, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error();
+      toast.success(body.scheduledAt ? 'آبیاری برنامه‌ریزی شد 💧' : 'آبیاری ثبت شد 💧');
+      loadFarmData(farmId);
+    } catch { toast.error('ثبت آبیاری ناموفق بود.'); }
+  };
 
-  if (farms.length === 0) return (
-    <div className="text-center mt-12">
-      <div className="text-4xl mb-3"><Droplet className="text-blue-500 mx-auto mb-3" size={40} /></div>
-      <p className="text-sm text-gray-500 dark:text-night-muted mb-4">ابتدا یک مزرعه ثبت کنید</p>
-      <button onClick={() => router.push('/setup')} className="btn-primary">ساخت مزرعه</button>
-    </div>
-  );
+  if (loading) return <div className="p-6 text-center text-gray-500 dark:text-night-muted"><Loader2 className="animate-spin mx-auto" /></div>;
+  if (farms.length === 0) return (<div className="card m-4 p-6 text-center"><p className="mb-3 text-gray-600 dark:text-night-muted">ابتدا یک مزرعه ثبت کنید</p><button onClick={() => router.push('/setup')} className="btn-primary">ساخت مزرعه</button></div>);
 
-  const farm = farms[0];
-  const weather = dashboardData?.current;
-  const forecast = dashboardData?.forecast || [];
-  const lastIrrigation = dashboardData?.lastIrrigation;
-
-  const irrigationCycleDays = 7;
-  const daysSinceLastIrr = lastIrrigation
-    ? Math.floor((Date.now() - new Date(lastIrrigation.date).getTime()) / (1000 * 60 * 60 * 24))
-    : null;
-  const daysUntilNextIrr = daysSinceLastIrr !== null ? Math.max(0, irrigationCycleDays - daysSinceLastIrr) : null;
-  const progressPct = daysSinceLastIrr !== null ? Math.min(100, Math.round((daysSinceLastIrr / irrigationCycleDays) * 100)) : 0;
-
+  const farm = farms.find((f: any) => f.id === farmId) || farms[0];
+  const weather = dash?.current; const forecast = dash?.forecast || []; const last = dash?.lastIrrigation;
+  const daysSince = last ? Math.floor((Date.now() - new Date(last.date).getTime()) / 86400000) : null;
+  const WIcon = wmoIcon(weather?.weatherCode);
   return (
-    <>
-      <div className="mb-4">
-        <p className="text-xs text-gray-500 dark:text-night-muted">مدیریت هوشمند آبیاری</p>
-        <h1 className="text-lg font-extrabold text-gray-800 dark:text-night-text">توصیه آبیاری</h1>
+    <div className="space-y-4 pb-4">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-extrabold text-gray-900 dark:text-white">توصیه آبیاری</h1>
+        {farms.length > 1 && <div className="w-44"><Dropdown value={farmId} onChange={v => { const id = String(v); setFarmId(id); setLoading(true); loadFarmData(id); }} options={farms.map((f: any) => ({ value: f.id, label: f.name }))} /></div>}
       </div>
+      <p className="text-sm text-gray-500 dark:text-night-muted text-right">{farm.name}{farm.city ? ` — ${[farm.city, farm.province].filter(Boolean).join('، ')}` : ''}</p>
 
-      <div className="card dark:bg-night-card/80 dark:border-night-border/60 mb-4 transition-colors duration-300">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Droplet className="text-blue-600" size={22} /></div>
-          <div>
-            <div className="text-sm font-bold text-gray-800 dark:text-night-text">{farm.name}</div>
-            <div className="text-xs text-gray-500 dark:text-night-muted">
-              {[farm.city, farm.province].filter(Boolean).join('، ') || 'موقعیت ثبت نشده'}
+      {rec && (
+        <div className={`card p-4 border-2 ${rec.recommend ? 'border-brand-green/50' : 'border-white/10'}`}>
+          <div className="flex items-start justify-between gap-3">
+            <button onClick={() => rec.recommend && setModalOpen(true)} disabled={!rec.recommend} className="shrink-0 btn-primary !w-auto !px-4 disabled:opacity-40 flex items-center gap-1"><Droplet size={16} />{rec.recommend ? 'ثبت این آبیاری' : 'نیاز نیست'}</button>
+            <div className="text-right min-w-0">
+              <div className="font-bold text-gray-900 dark:text-white">{rec.recommend ? 'آبیاری توصیه می‌شود' : 'فعلاً آبیاری لازم نیست'}</div>
+              <div className="text-xs text-gray-500 dark:text-night-muted mt-1">{rec.reason}</div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500 dark:text-night-muted justify-end">
+                <span>اطمینان {fa(rec.confidence)}٪</span><span>زمان {rec.recommendedAt}</span><span>{methodLabel(rec.method)}</span>
+                {rec.recommend && <span>{fa(rec.amount)} مترمکعب · {fa(rec.duration)} دقیقه</span>}
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        {daysSinceLastIrr !== null && (
-          <div className="mb-3">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-night-muted mb-1">
-              <span>آخرین آبیاری: {daysSinceLastIrr} روز پیش</span>
-              {daysUntilNextIrr !== null && <span>{daysUntilNextIrr} روز مانده</span>}
-            </div>
-            <div className="prog-bg dark:bg-white/10">
-              <div className="prog-fill" style={{
-                width: `${progressPct}%`,
-                background: progressPct > 80 ? 'linear-gradient(90deg, #22C55E, #eab308)' :
-                            progressPct > 50 ? 'linear-gradient(90deg, #22C55E, #2BB673)' : '#22C55E'
-              }} />
-            </div>
-          </div>
-        )}
-
-        {weather && (
-          <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-            <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
-              <div className="text-lg font-extrabold text-brand-green">{weather.temperature ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Thermometer size={12} className="inline ml-1" /> دما</div>
-            </div>
-            <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
-              <div className="text-lg font-extrabold text-brand-green">{weather.humidity ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Droplet size={12} className="inline ml-1" /> رطوبت</div>
-            </div>
-            <div className="bg-green-50 dark:bg-night-surface rounded-xl p-2">
-              <div className="text-lg font-extrabold text-brand-green">{weather.windSpeed ?? '--'}</div>
-              <div className="text-[10px] text-gray-500 dark:text-night-muted"><Wind size={12} className="inline ml-1" /> باد</div>
-            </div>
-          </div>
-        )}
-
-        {forecast.length > 0 && (
-          <div className="mt-3">
-            <div className="text-xs font-bold text-gray-600 dark:text-night-muted mb-2"><Calendar size={14} className="inline ml-1" />پیش‌بینی ۵ روزه</div>
-            <div className="flex gap-1 overflow-x-auto pb-1">
-              {forecast.slice(0, 5).map((d: any, i: number) => (
-                <div key={i} className="flex-1 text-center bg-white/40 dark:bg-night-surface/40 rounded-lg p-1.5 min-w-[55px]">
-                  <div className="text-[10px] text-gray-500 dark:text-night-muted">
-                    {new Date(d.date).toLocaleDateString('fa-IR', { weekday: 'short' })}
-                  </div>
-                  <div className="text-xs font-bold text-gray-800 dark:text-night-text mt-0.5">
-                    {d.tempMax ? Math.round(d.tempMax) : '--'}°
-                  </div>
-                  <div className="text-[9px] text-gray-400 dark:text-night-muted">{d.tempMin ? Math.round(d.tempMin) : '--'}°</div>
-                  {d.dayPrecipitation != null && <div className="text-[9px] text-blue-500 dark:text-blue-400 mt-0.5"><CloudRain size={10} className="inline" /> {d.dayPrecipitation > 100 ? '۰٪' : d.dayPrecipitation + '%'}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {!weather && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 py-2 rounded-lg mt-2">
-            <AlertTriangle size={14} className="inline mr-1" /> داده هواشناسی فعال نیست. 
-            <button onClick={() => {/* show API key modal */}} className="underline mr-1 font-bold">تنظیم API Key</button>
-          </p>
-        )}
-      </div>
-
-      {/* Add Irrigation Button */}
-      <div className="flex gap-2 mb-4">
-        <button onClick={() => {/* open add irrigation modal */}} className="btn-primary flex-1 !text-xs">
-          <Plus size={14} className="inline ml-1" /> ثبت آبیاری جدید
-        </button>
-        <button onClick={() => router.push('/ai?q=irrigation')} className="btn-outline flex-1 !text-xs">
-          <Sparkles size={14} className="inline ml-1" /> از AI بپرس
-        </button>
-      </div>
-
-      <div className="section-title dark:text-night-text/80">📋 تاریخچه آبیاری</div>
-      <div className="card dark:bg-night-card/80 dark:border-night-border/60 transition-colors duration-300">
-        {lastIrrigation ? (
+      <div className="card p-4">
+        {weather ? (
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold text-gray-800 dark:text-night-text">
-                {new Date(lastIrrigation.date).toLocaleDateString('fa-IR')}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-night-muted">
-                {lastIrrigation.amount} لیتر • {lastIrrigation.duration} دقیقه
-              </div>
+            <div className="text-left"><div className="text-3xl font-extrabold text-gray-900 dark:text-white">{Math.round(weather.temperature)}°</div><div className="text-xs text-gray-500 dark:text-night-muted">{weather.weatherText}</div></div>
+            <WIcon size={40} className="text-brand-green" />
+            <div className="flex gap-4 text-right text-sm">
+              <div><div className="font-bold text-gray-900 dark:text-white">{fa(weather.humidity)}٪</div><div className="text-xs text-gray-500 dark:text-night-muted">رطوبت</div></div>
+              <div><div className="font-bold text-gray-900 dark:text-white">{fa(weather.windSpeed)}</div><div className="text-xs text-gray-500 dark:text-night-muted">باد</div></div>
             </div>
-            <span className="badge badge-success">ثبت شده</span>
           </div>
-        ) : (
-          <p className="text-xs text-gray-400 dark:text-night-muted text-center py-4">هنوز هیچ آبیاری ثبت نشده</p>
+        ) : (<div className="text-sm text-gray-500 dark:text-night-muted text-right">داده هواشناسی در دسترس نیست. (Open‑Meteo نیاز به کلید ندارد؛ دسترسی خروجی سرور به api.open-meteo.com را بررسی کنید.)</div>)}
+      </div>
+
+      {forecast.length > 0 && (
+        <div className="card p-4">
+          <h3 className="font-bold text-gray-900 dark:text-white text-right mb-3">پیش‌بینی ۶ روزه</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            {forecast.slice(0, 6).map((d: any, i: number) => { const I = wmoIcon(d.weatherCode); return (
+              <div key={i} className="rounded-xl bg-white/40 dark:bg-white/[0.03] border border-white/10 p-2 text-center">
+                <div className="text-[11px] text-gray-500 dark:text-night-muted">{new Date(d.date).toLocaleDateString('fa-IR', { weekday: 'short' })}</div>
+                <I size={20} className="mx-auto my-1 text-brand-green" />
+                <div className="text-xs font-bold text-gray-900 dark:text-white">{d.tempMax != null ? Math.round(d.tempMax) : '--'}°</div>
+                <div className="text-[10px] text-gray-500 dark:text-night-muted">{d.dayPrecipitation != null ? `${fa(d.dayPrecipitation)}٪` : ''}</div>
+              </div>); })}
+          </div>
+        </div>
+      )}
+
+      <div className="card p-4">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-night-muted mb-2"><span>سیکل آبیاری</span><span>{daysSince != null ? `${fa(daysSince)} روز پیش` : 'ثبت‌نشده'}</span></div>
+        <div className="prog-bg"><div className="prog-fill" style={{ width: `${daysSince != null ? Math.min(100, Math.round((daysSince / 7) * 100)) : 0}%` }} /></div>
+      </div>
+
+      <div className="flex gap-2">
+        <button onClick={() => setModalOpen(true)} className="btn-primary flex-1 flex items-center justify-center gap-1"><Plus size={16} />ثبت آبیاری جدید</button>
+        <button onClick={() => router.push('/ai?farm=' + farm.id + '&q=irrigation')} className="btn-outline flex-1 flex items-center justify-center gap-1"><Sparkles size={16} />مشاوره AI</button>
+      </div>
+
+      <div className="card p-4">
+        <h3 className="font-bold text-gray-900 dark:text-white text-right mb-3 flex items-center justify-end gap-1"><History size={16} />تاریخچه آبیاری</h3>
+        {history.length === 0 ? (<div className="text-sm text-gray-500 dark:text-night-muted text-center py-4">هنوز هیچ آبیاری ثبت نشده</div>) : (
+          <div className="space-y-2">
+            {history.map((h: any) => (
+              <div key={h.id} className="flex items-center justify-between rounded-xl bg-white/40 dark:bg-white/[0.03] border border-white/10 p-3">
+                <span className={`text-[11px] px-2 py-0.5 rounded-full ${h.isApplied ? 'bg-green-500/15 text-green-600 dark:text-green-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`}>{h.isApplied ? 'انجام شده' : 'برنامه‌ریزی'}</span>
+                <div className="text-right text-sm">
+                  <div className="font-bold text-gray-900 dark:text-white">{h.amount != null ? `${fa(h.amount)} مترمکعب` : '—'}{h.duration != null ? ` · ${fa(h.duration)} دقیقه` : ''}</div>
+                  <div className="text-xs text-gray-500 dark:text-night-muted">{methodLabel(h.method)} · {new Date(h.appliedAt || h.scheduledAt || h.createdAt).toLocaleDateString('fa-IR')}{h.notes ? ` · ${h.notes}` : ''}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      <button onClick={() => router.push('/ai')} className="btn-outline mt-3 !text-xs">
-        🤖 از AI درباره زمان آبیاری بپرس
-      </button>
-    </>
+      <LogModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={createLog} initial={rec?.recommend ? { amount: rec.amount, duration: rec.duration, method: rec.method } : null} />
+    </div>
   );
+}
+
+export default function IrrigationPage() {
+  return <Suspense fallback={<div className="p-6 text-center text-gray-500 dark:text-night-muted"><Loader2 className="animate-spin mx-auto" /></div>}><IrrigationInner /></Suspense>;
 }
