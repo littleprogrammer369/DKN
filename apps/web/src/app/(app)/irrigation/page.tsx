@@ -17,10 +17,10 @@ function wmoIcon(code?: number | null) {
   return Cloud;
 }
 const METHOD_OPTIONS = [
-  { value: 'DRIP', label: 'قطره\u200cای' }, { value: 'SPRINKLER', label: 'بارانی' },
+  { value: 'DRIP', label: 'قطره‌ای' }, { value: 'SPRINKLER', label: 'بارانی' },
   { value: 'SURFACE', label: 'سطحی' }, { value: 'SUBSURFACE', label: 'زیرزمینی' },
 ];
-const methodLabel = (v?: string | null) => METHOD_OPTIONS.find(m => m.value === v)?.label || v || '\u2014';
+const methodLabel = (v?: string | null) => METHOD_OPTIONS.find(m => m.value === v)?.label || v || '—';
 function LogModal({ open, onClose, onCreate, initial }: any) {
   const [amount, setAmount] = useState(''); const [duration, setDuration] = useState('');
   const [method, setMethod] = useState('DRIP'); const [notes, setNotes] = useState('');
