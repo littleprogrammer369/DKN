@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Send, Sparkles, User, Bot, Loader2, Plus, History, Sprout, ChevronDown, Trash2, Clock, Calendar, ChevronLeft, MessageSquare } from 'lucide-react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Send, Sparkles, User, Bot, Loader2, Plus, History, Sprout, ChevronDown, Trash2, Calendar, MessageSquare } from 'lucide-react';
 import { ChatInput } from '@/components/ChatInput';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -44,8 +44,10 @@ function getSessionDate(session: Message[]): string {
   return d.toLocaleDateString('fa-IR');
 }
 
-export default function AiChatPage() {
+function AiChatInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const farmParam = searchParams.get('farm');
   const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -66,7 +68,21 @@ export default function AiChatPage() {
     // Load farms
     fetch('/api/v1/farms', { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json())
+<<<<<<< HEAD
       .then((d) => { const fl = Array.isArray(d) ? d : []; setFarms(fl); if (fl.length > 0) setSelectedFarm(fl[0].id); })
+=======
+      .then((d) => {
+        const fl = Array.isArray(d) ? d : [];
+        setFarms(fl);
+        if (fl.length > 0) {
+          if (farmParam && fl.some(f => f.id === farmParam)) {
+            setSelectedFarm(farmParam);
+          } else {
+            setSelectedFarm(fl[0].id);
+          }
+        }
+      })
+>>>>>>> origin/armin
       .catch(() => {});
 
     // Load history from server
@@ -312,5 +328,13 @@ export default function AiChatPage() {
       {/* Chat Input */}
       <ChatInput onSend={handleSend} disabled={typing} placeholder="سوال خود را بپرسید..." />
     </div>
+);
+}
+
+export default function AiChatPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-10"><p className="text-gray-400 dark:text-night-muted">در حال بارگذاری…</p></div>}>
+      <AiChatInner />
+    </Suspense>
   );
 }

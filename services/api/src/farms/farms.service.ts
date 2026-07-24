@@ -35,12 +35,14 @@ export class FarmsService {
     waterSource?: string;
     irrigationType?: string;
     geojson?: any;
+    boundary?: any;
+    cropType?: string;
   }) {
     return this.prisma.farm.create({
       data: {
         userId: data.userId,
         name: data.name,
-        product: 'گندم',
+        product: data.cropType || 'wheat',
         province: data.province,
         city: data.city,
         areaHa: data.areaHa,
@@ -49,6 +51,25 @@ export class FarmsService {
         waterSource: data.waterSource as any,
         irrigationType: data.irrigationType as any,
         geojson: data.geojson || undefined,
+        boundary: data.boundary || undefined,
+      },
+    });
+  }
+
+  async update(id: string, userId: string, data: any) {
+    const farm = await this.findOne(id, userId);
+    return this.prisma.farm.update({
+      where: { id },
+      data: {
+        name: data.name ?? farm.name,
+        product: (data.cropType || data.product) ?? farm.product,
+        province: data.province ?? farm.province,
+        city: data.city ?? farm.city,
+        areaHa: data.areaHa ?? farm.areaHa,
+        soilType: data.soilType ?? farm.soilType,
+        irrigationType: data.irrigationType ?? farm.irrigationType,
+        cropDate: data.cropDate ? new Date(data.cropDate) : farm.cropDate,
+        boundary: data.boundary ?? farm.boundary,
       },
     });
   }

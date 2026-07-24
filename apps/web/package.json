@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@turf/turf": "^7.3.5",
     "axios": "^1.6.5",
     "chart.js": "^4.4.1",
     "clsx": "^2.1.1",

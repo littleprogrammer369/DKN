@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dkn-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dkn_user
+      POSTGRES_PASSWORD: dkn_secure_pass_1402
+      POSTGRES_DB: dadeh_kesht_novin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dkn_user -d dadeh_kesht_novin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dkn-redis
+    restart: unless-stopped
+    command: redis-server --requirepass dkn_redis_pass_1402
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "dkn_redis_pass_1402", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:

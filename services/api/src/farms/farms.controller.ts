@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FarmsService } from './farms.service';
 
@@ -20,6 +20,11 @@ export class FarmsController {
   @Post()
   create(@Body() body: any, @Request() req: any) {
     return this.farmsService.create({ ...body, userId: req.user.id });
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any, @Request() req: any) {
+    return this.farmsService.update(id, req.user.id, body);
   }
 
   @Delete(':id')
