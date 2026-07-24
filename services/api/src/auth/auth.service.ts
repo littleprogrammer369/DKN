@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service';
+import { SmsService } from '../sms/sms.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private smsService: SmsService,
   ) {}
 
   // Register new user
@@ -119,15 +121,12 @@ export class AuthService {
       },
     });
 
-    // Log code (since SMS panel is not purchased yet)
-    console.log(`[OTP] Code for ${phone}: ${code} (expires in 5 min)`);
+    // Try to send via Kavenegar SMS
+    const sent = await this.smsService.sendOtp(phone, code);
 
     return {
       message: 'کد تأیید ارسال شد',
       otpId: otp.id,
-      // TODO: When SMS panel is added, remove the code from response
-      // For now return the code so user can test without SMS
-      code: code,
     };
   }
 
