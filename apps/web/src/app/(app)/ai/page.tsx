@@ -68,10 +68,7 @@ function AiChatInner() {
     // Load farms
     fetch('/api/v1/farms', { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.json())
-<<<<<<< HEAD
-      .then((d) => { const fl = Array.isArray(d) ? d : []; setFarms(fl); if (fl.length > 0) setSelectedFarm(fl[0].id); })
-=======
-      .then((d) => {
+.then((d) => {
         const fl = Array.isArray(d) ? d : [];
         setFarms(fl);
         if (fl.length > 0) {
@@ -82,7 +79,6 @@ function AiChatInner() {
           }
         }
       })
->>>>>>> origin/armin
       .catch(() => {});
 
     // Load history from server
