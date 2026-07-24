@@ -1,7 +1,17 @@
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+
 export class ChatDto {
+  @IsString()
+  @IsNotEmpty()
   message: string;
+
+  @IsOptional()
+  @IsString()
   farmId?: string;
-  expertiseLevel?: 'simple' | 'farmer' | 'expert' | 'engineer';
+
+  @IsOptional()
+  @IsString()
+  expertiseLevel?: string;
 }
 
 export class ChatResponseDto {
