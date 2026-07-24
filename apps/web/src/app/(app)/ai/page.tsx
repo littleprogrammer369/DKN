@@ -1,5 +1,6 @@
 'use client';
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Send, Sparkles, User, Bot, Loader2, Plus, History, Trash2, AlertTriangle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -42,6 +43,9 @@ function AiChatInner() {
   const [activeIdx, setActiveIdx] = useState(0);
   const endRef = useRef<HTMLDivElement>(null); const taRef = useRef<HTMLTextAreaElement>(null);
   const autoRef = useRef(false); const ALL = 'dkn-ai-all-history';
+  const histBtnRef = useRef<HTMLButtonElement>(null);
+  const histPanelRef = useRef<HTMLDivElement>(null);
+  const [histPos, setHistPos] = useState<{ top: number; left: number } | null>(null);
   const H = () => ({ Authorization: 'Bearer ' + (localStorage.getItem('token') || '') });
 
   useEffect(() => {
@@ -83,9 +87,31 @@ function AiChatInner() {
   useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages, typing]);
   useEffect(() => { if (messages.length) setAllHistory(prev => { const u=[...prev]; const s=groupIntoSessions(u); s[activeIdx]=messages; const flat=s.flat(); try{localStorage.setItem(ALL, JSON.stringify(flat));}catch{} return flat; }); }, [messages]);
 
+  useLayoutEffect(() => {
+    if (!showHistory || !histPanelRef.current || !histPos) return;
+    const ph = histPanelRef.current.offsetHeight, pw = histPanelRef.current.offsetWidth;
+    let { top, left } = histPos;
+    if (top + ph > window.innerHeight - 8) { const r = histBtnRef.current?.getBoundingClientRect(); if (r) top = Math.max(8, r.top - ph - 6); }
+    if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
+    if (left < 8) left = 8;
+    if (top !== histPos.top || left !== histPos.left) setHistPos({ top, left });
+  }, [showHistory, histPos]);
+  useEffect(() => {
+    if (!showHistory) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowHistory(false); };
+    const onScroll = (e: Event) => { if (histPanelRef.current && e.target instanceof Node && histPanelRef.current.contains(e.target)) return; setShowHistory(false); };
+    const onResize = () => setShowHistory(false);
+    window.addEventListener('keydown', onKey); window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onResize);
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onResize); };
+  }, [showHistory]);
+
   const newChat = () => { const w=[{ role:'ai', content:WELCOME, time:new Date() } as Message]; setAllHistory(p=>[...p,...w]); setMessages(w); setActiveIdx(groupIntoSessions([...allHistory,...w]).length-1); setShowHistory(false); toast.success('گفتگوی جدید'); };
-  const clearAll = async () => { if(!confirm('همهٔ تاریخچه پاک شود؟')) return; try{ await fetch('/api/v1/ai/history',{method:'DELETE',headers:H()}); }catch{} setAllHistory([]); const w=[{role:'ai',content:WELCOME,time:new Date()} as Message]; setMessages(w); setActiveIdx(0); localStorage.removeItem(ALL); toast.success('تاریخچه پاک شد'); };
+  const clearAll = async () => { if(!confirm('همهٔ تاریخچه پاک شود؟')) return; try{ await fetch('/api/v1/ai/history',{method:'DELETE',headers:H()}); }catch{} setAllHistory([]); const w=[{role:'ai',content:WELCOME,time:new Date()} as Message]; setMessages(w); setActiveIdx(0); localStorage.removeItem(ALL); toast.success('تاریخچه پاک شد'); setShowHistory(false); };
   const switchS = (i:number) => { const s=groupIntoSessions(allHistory); if(s[i]){ setMessages(s[i]); setActiveIdx(i); setShowHistory(false);} };
+  const toggleHistory = () => {
+    if (!showHistory) { const r = histBtnRef.current?.getBoundingClientRect(); if (r) setHistPos({ top: r.bottom + 6, left: r.left }); }
+    setShowHistory(o => !o);
+  };
 
   const sessions = groupIntoSessions(allHistory);
   const farmName = farms.find((f:any)=>f.id===selectedFarm)?.name;
@@ -105,17 +131,17 @@ function AiChatInner() {
         <div className="flex items-center gap-1">
           <button onClick={newChat} title="گفتگوی جدید" className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-brand-green"><Plus size={18}/></button>
           <div className="relative">
-            <button onClick={()=>setShowHistory(o=>!o)} title="تاریخچه" className={`w-9 h-9 rounded-xl flex items-center justify-center ${showHistory?'bg-brand-green text-white':'bg-white/5 hover:bg-white/10 text-gray-400'}`}><History size={18}/></button>
-            {showHistory && (<>
-              <div className="fixed inset-0 z-30" onClick={()=>setShowHistory(false)}/>
-              <div className="absolute left-0 mt-2 z-40 w-72 max-h-80 overflow-y-auto rounded-xl card p-2 space-y-1 text-right">
+            <button ref={histBtnRef} onClick={toggleHistory} title="تاریخچه" className={`w-9 h-9 rounded-xl flex items-center justify-center ${showHistory?'bg-brand-green text-white':'bg-white/5 hover:bg-white/10 text-gray-400'}`}><History size={18}/></button>
+            {showHistory && histPos && createPortal((<>
+              <div className="fixed inset-0 z-[110]" onClick={()=>setShowHistory(false)}/>
+              <div ref={histPanelRef} style={{ position:'fixed', top:histPos.top, left:histPos.left }} className="z-[120] w-72 max-h-80 overflow-y-auto rounded-xl card p-2 space-y-1 text-right">
                 {sessions.length===0 ? <div className="text-xs text-gray-500 p-2">تاریخچه‌ای نیست</div> : sessions.map((s,i)=>(
                   <button key={i} onClick={()=>switchS(i)} className={`w-full text-right rounded-lg px-3 py-2 text-sm ${i===activeIdx?'bg-brand-green/10 text-brand-green':'hover:bg-white/5'}`}>
                     <div className="font-bold truncate">{sTitle(s)}</div><div className="text-[11px] text-gray-500">{sWhen(s)}</div>
                   </button>))}
                 <button onClick={clearAll} className="w-full text-right rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 flex items-center gap-1 justify-end"><Trash2 size={14}/>پاک کردن همه</button>
               </div>
-            </>)}
+            </>), document.body)}
           </div>
           <button onClick={clearAll} title="پاک کردن گفتگو" className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-red-500/15 text-red-400"><Trash2 size={18}/></button>
         </div>
