@@ -58,3 +58,16 @@
 - Support chat MVP uses localStorage fallback for contact form; backend endpoint not implemented yet
 - .env.example was not committed because `.gitignore` excludes `.env.*`; if needed, add explicitly with `git add -f`
 - Production migration not run; `db push` used for local schema sync only
+
+## Landing UI Fix (CLINE PROMPT 06)
+- File changed: `apps/web/src/components/LandingClient.tsx`
+- Build: `pnpm --filter web build` ✅
+- Validation:
+  - `/` contains landing text: ✅ `مدیریت هوشمند مزرعه`
+  - CSS linked: ✅ `/_next/static/css/...`
+  - `/auth` still works: ✅
+
+## Git
+- Latest commit: `8733a78` fix(web): polish landing page layout and styling
+- Branch: `feature/profile-plans-faq-admin-panel`
+- Pushed: ✅
