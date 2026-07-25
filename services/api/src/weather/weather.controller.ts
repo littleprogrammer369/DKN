@@ -21,4 +21,7 @@ export class WeatherController {
   getDashboard(@Param('farmId') farmId: string, @Query('city') city: string) {
     return this.weatherService.getDashboardData(farmId, city || 'ساوه');
   }
+
+  @Get('panel/:farmId')
+  getPanel(@Param('farmId') farmId: string, @Request() req: any) { return this.weatherService.getPanel(req.user.id, farmId); }
 }
