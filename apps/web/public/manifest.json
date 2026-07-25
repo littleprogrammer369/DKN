@@ -1,0 +1,9 @@
+{
+  "name": "داده کشت نوین",
+  "short_name": "داده‌کشت",
+  "description": "هوش مصنوعی در خدمت کشاورزی",
+  "lang": "fa", "dir": "rtl",
+  "start_url": "/", "scope": "/", "display": "standalone",
+  "background_color": "#0A1A12", "theme_color": "#2BB673",
+  "icons": [ { "src": "/brand/icon.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" } ]
+}

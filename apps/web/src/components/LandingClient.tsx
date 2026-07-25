@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 
 function ThemeToggleInline() {
@@ -35,9 +35,8 @@ export default function LandingClient() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2BB673, #22C55E)' }}>
-                <Sprout className="text-white" size={18} />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/icon.png" alt="داده کشت نوین" className="h-8 w-8 rounded-lg" />
               <span className="font-bold text-gray-800 dark:text-night-text">داده کشت نوین</span>
             </Link>
 

@@ -3,10 +3,17 @@ import "./globals.css";
 import { ToastProvider } from '@/lib/toast';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.FRONTEND_URL || 'http://localhost:3000'),
   title: "داده کشت نوین",
   description: "هوش مصنوعی در خدمت کشاورزی",
+  themeColor: "#2BB673",
   manifest: "/manifest.json",
-  icons: { icon: "/icons/icon-192.png" },
+  icons: {
+    icon: [{ url: "/brand/icon.png", type: "image/png" }],
+    apple: [{ url: "/brand/icon.png" }],
+  },
+  openGraph: { title: "داده کشت نوین", description: "هوش مصنوعی در خدمت کشاورزی", images: ["/brand/icon.png"] },
+  twitter: { card: "summary", title: "داده کشت نوین", images: ["/brand/icon.png"] },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
