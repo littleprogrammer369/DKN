@@ -5,9 +5,10 @@ import Link from 'next/link';
 import {
   Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite,
   ChevronDown, ChevronUp, Menu, X, ArrowLeft, Sun, Moon,
-  CheckCircle2,
+  CheckCircle2, LayoutDashboard,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { isSessionValid, migrateLegacyToken, clearSession } from '@/lib/session';
 
 function ThemeToggleInline() {
   const { theme, toggle } = useTheme();
@@ -26,8 +27,13 @@ export default function LandingClient() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    migrateLegacyToken();
+    setLoggedIn(isSessionValid());
+  }, []);
 
   const toggleFaq = (i: number) => setOpenFaq(openFaq === i ? null : i);
 
@@ -63,8 +69,17 @@ export default function LandingClient() {
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
-              <Link href="/auth?mode=login" className="px-5 py-2 rounded-full text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition">ورود</Link>
-              <Link href="/auth?mode=register" className="px-5 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all">ثبت‌نام رایگان</Link>
+              {mounted && loggedIn ? (
+                <Link href="/dashboard" className="px-5 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all inline-flex items-center gap-2">
+                  <LayoutDashboard size={16} />
+                  ورود به داشبورد
+                </Link>
+              ) : (
+                <>
+                  <Link href="/auth?mode=login" className="px-5 py-2 rounded-full text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition">ورود</Link>
+                  <Link href="/auth?mode=register" className="px-5 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all">ثبت‌نام رایگان</Link>
+                </>
+              )}
             </div>
 
             <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white/80 dark:bg-emerald-950/80 border border-emerald-100 dark:border-emerald-900">
@@ -82,8 +97,17 @@ export default function LandingClient() {
               <a href="#faq" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">سوالات متداول</a>
               <Link href="/terms" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">قوانین و مقررات</Link>
               <div className="flex gap-2 pt-2">
-                <Link href="/auth?mode=login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">ورود</Link>
-                <Link href="/auth?mode=register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600">ثبت‌نام رایگان</Link>
+                {mounted && loggedIn ? (
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 inline-flex items-center justify-center gap-2">
+                    <LayoutDashboard size={16} />
+                    داشبورد
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth?mode=login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">ورود</Link>
+                    <Link href="/auth?mode=register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600">ثبت‌نام رایگان</Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -102,12 +126,21 @@ export default function LandingClient() {
                 داده کشت نوین به کشاورزان و مدیران مزارع کمک می‌کند وضعیت زمین، آب‌وهوا، آبیاری، آفات و توصیه‌های تخصصی را در یک پنل ساده و فارسی مدیریت کنند.
               </p>
               <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link href="/auth?mode=register" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center">
-                  شروع رایگان
-                </Link>
-                <Link href="/auth?mode=login" className="px-8 py-3.5 rounded-full text-base font-bold text-emerald-700 dark:text-emerald-300 border-2 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition text-center">
-                  ورود به حساب
-                </Link>
+                {mounted && loggedIn ? (
+                  <Link href="/dashboard" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center inline-flex items-center justify-center gap-2">
+                    <LayoutDashboard size={20} />
+                    ورود به داشبورد
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth?mode=register" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center">
+                      شروع رایگان
+                    </Link>
+                    <Link href="/auth?mode=login" className="px-8 py-3.5 rounded-full text-base font-bold text-emerald-700 dark:text-emerald-300 border-2 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition text-center">
+                      ورود به حساب
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
@@ -241,7 +274,14 @@ export default function LandingClient() {
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-4">پلن‌های اشتراک</h2>
             <p className="text-gray-600 dark:text-slate-300 mb-8">با پلن رایگان شروع کنید و در صورت نیاز به امکانات پیشرفته‌تر، یکی از طرح‌های مناسب را انتخاب کنید.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth?mode=register" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center">ثبت‌نام رایگان</Link>
+              {mounted && loggedIn ? (
+                <Link href="/dashboard" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center inline-flex items-center justify-center gap-2">
+                  <LayoutDashboard size={20} />
+                  ورود به داشبورد
+                </Link>
+              ) : (
+                <Link href="/auth?mode=register" className="px-8 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 transition-all text-center">ثبت‌نام رایگان</Link>
+              )}
               <Link href="/subscription" className="px-8 py-3.5 rounded-full text-base font-bold text-emerald-700 dark:text-emerald-300 border-2 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition text-center">مشاهده پلن‌ها</Link>
             </div>
           </div>

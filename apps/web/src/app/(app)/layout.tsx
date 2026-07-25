@@ -3,8 +3,11 @@
 import { ThemeProvider } from '@/lib/theme';
 import NavBar from '@/components/NavBar';
 import ThemeToggle from '@/components/ThemeToggle';
+import useSessionGuard from '@/hooks/useSessionGuard';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  useSessionGuard();
+
   return (
     <ThemeProvider>
       <div className="h-full overflow-y-auto px-4 pt-4 pb-24 transition-colors duration-300 max-w-[420px] mx-auto">
