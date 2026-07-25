@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body><div className="max-w-[420px] mx-auto relative">{children}<ToastProvider /></div></body>
+      <body><div className="relative">{children}<ToastProvider /></div></body>
     </html>
   );
 }
