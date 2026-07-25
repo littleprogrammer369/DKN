@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { isSessionValid, saveSession, migrateLegacyToken } from '@/lib/session';
 
 interface AuthPageProps {
   initialMode?: 'login' | 'register';
-  onGoToDashboard?: () => void;
 }
 
 function ThemeToggleInline() {
@@ -22,10 +22,12 @@ function ThemeToggleInline() {
   );
 }
 
-export default function AuthPage({ initialMode = 'login', onGoToDashboard }: AuthPageProps) {
+export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [checking, setChecking] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
-  const [hasToken, setHasToken] = useState(false);
   const [authMethod, setAuthMethod] = useState<"password" | "otp">("password");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -41,10 +43,21 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
   const [passwordStrength, setPasswordStrength] = useState("");
   const [mounted, setMounted] = useState(false);
 
+  // Check session on mount — redirect if valid
   useEffect(() => {
     setMounted(true);
-    try { setHasToken(!!localStorage.getItem("token")); } catch { setHasToken(false); }
-  }, []);
+    migrateLegacyToken();
+    if (isSessionValid()) {
+      router.replace('/dashboard');
+      return;
+    }
+    setChecking(false);
+
+    // Check for expired session reason
+    if (searchParams?.get('reason') === 'session-expired') {
+      setSessionExpired(true);
+    }
+  }, [router, searchParams]);
 
   useEffect(() => {
     setIsLogin(initialMode === 'login');
@@ -93,9 +106,9 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
       });
       if (!res.ok) throw new Error("کد نامعتبر");
       const data = await res.json();
-      localStorage.setItem("token", data.accessToken);
+      saveSession(data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user || {}));
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err: any) { setError(err.message || "خطا");
     } finally { setLoading(false); }
   };
@@ -123,9 +136,9 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "خطا");
-      localStorage.setItem("token", data.accessToken);
+      saveSession(data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user || {}));
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err: any) { setError(err.message || "خطا");
     } finally { setLoading(false); }
   };
@@ -134,20 +147,22 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
     setTimeout(() => document.getElementById("otp-" + idx)?.focus(), 10);
   };
 
-  const goToDashboard = () => {
-    if (onGoToDashboard) onGoToDashboard();
-    else router.push("/dashboard");
-  };
-
   return (
     <ThemeProvider>
       <div className="flex flex-col justify-center items-center min-h-screen px-5 py-10">
         <ThemeToggleInline />
-        {mounted && hasToken && (
-          <button onClick={goToDashboard} className="absolute top-4 right-4 z-20 px-4 py-2 rounded-full bg-brand-green text-white text-xs font-bold shadow-lg hover:opacity-90 transition">
-            ورود به داشبورد
-          </button>
-        )}
+        {checking ? (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-night-muted">
+            <Loader2 className="animate-spin" size={16} />
+            در حال بررسی نشست...
+          </div>
+        ) : (<>
+          {sessionExpired && (
+          <div className="w-full max-w-sm mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex items-center gap-2">
+            <AlertCircle className="text-amber-600 dark:text-amber-400 flex-shrink-0" size={18} />
+            <p className="text-amber-700 dark:text-amber-300 text-xs">نشست شما منقضی شده است. لطفاً دوباره وارد شوید.</p>
+          </div>
+          )}
         <div className="mb-8 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo-app-icon.svg" alt="داده کشت نوین" className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-[0_8px_24px_rgba(34,197,94,0.35)] select-none pointer-events-none" draggable={false} />
@@ -264,6 +279,7 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
           </button>
           <p className="text-[10px] text-gray-400 dark:text-night-muted/70 text-center mt-3">با ادامه، <a href="/terms" className="text-brand-green underline">قوانین</a> را می‌پذیرید</p>
         </div>
+        </>)}
         <p className="text-xs text-gray-500 dark:text-night-muted/70 text-center mt-8 max-w-xs leading-relaxed">
           با استفاده از فناوری <span className="font-semibold text-gray-700 dark:text-night-text">هوش مصنوعی</span> و{" "}
           <span className="font-semibold text-gray-700 dark:text-night-text">تصاویر ماهواره‌ای</span>، کشاورزی مطمئن داشته باشید.

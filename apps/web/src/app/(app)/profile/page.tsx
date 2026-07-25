@@ -8,6 +8,7 @@ import {
   MessageCircle, HelpCircle, Crown, Lock, Trash2, Edit3,
   Check, ChevronLeft, X, Loader2, AlertTriangle, Key, Shield, XCircle, LayoutDashboard
 } from 'lucide-react';
+import { clearSession } from '@/lib/session';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -64,8 +65,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearSession();
     router.push('/');
   };
 
