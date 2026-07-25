@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   User, Mail, Phone, Calendar, Camera, LogOut, Sun, Moon,
   MessageCircle, HelpCircle, Crown, Lock, Trash2, Edit3,
-  Check, ChevronLeft, X, Loader2, AlertTriangle, Key, Shield, XCircle
+  Check, ChevronLeft, X, Loader2, AlertTriangle, Key, Shield, XCircle, LayoutDashboard
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -69,6 +69,21 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  const planLabel = (plan?: string) => {
+    switch (plan) {
+      case 'FREE':
+        return 'رایگان';
+      case 'BASIC':
+        return 'پایه';
+      case 'PREMIUM':
+        return 'پیشرفته';
+      case 'ENTERPRISE':
+        return 'سازمانی';
+      default:
+        return plan || '---';
+    }
+  };
+
   // ── Avatar Upload ──
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,17 +118,17 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error(data.message || 'خطا');
       setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
-      setEditMsg('✅ اطلاعات با موفقیت بروز شد');
+      setEditMsg('اطلاعات با موفقیت بروز شد');
       setTimeout(() => { setShowEditProfile(false); setEditMsg(''); }, 1500);
     } catch (err: any) {
-      setEditMsg('❌ ' + (err.message || 'خطا در بروزرسانی'));
+      setEditMsg('خطا در بروزرسانی');
     } finally { setEditLoading(false); }
   };
 
   // ── Change Password ──
   const handleChangePassword = async () => {
-    if (newPass.length < 8) { setPassMsg('❌ رمز عبور حداقل ۸ کاراکتر'); return; }
-    if (newPass !== confirmNewPass) { setPassMsg('❌ رمز عبور و تکرار آن یکسان نیست'); return; }
+    if (newPass.length < 8) { setPassMsg('رمز عبور حداقل ۸ کاراکتر'); return; }
+    if (newPass !== confirmNewPass) { setPassMsg('رمز عبور و تکرار آن یکسان نیست'); return; }
     setPassLoading(true); setPassMsg('');
     try {
       const token = localStorage.getItem('token');
@@ -124,17 +139,17 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'خطا');
-      setPassMsg('✅ رمز عبور با موفقیت تغییر کرد');
+      setPassMsg('رمز عبور با موفقیت تغییر کرد');
       setCurrentPass(''); setNewPass(''); setConfirmNewPass('');
       setTimeout(() => { setShowChangePass(false); setPassMsg(''); }, 1500);
     } catch (err: any) {
-      setPassMsg('❌ ' + (err.message || 'خطا'));
+      setPassMsg(err.message || 'خطا');
     } finally { setPassLoading(false); }
   };
 
   // ── Delete Account ──
   const handleDeleteAccount = async () => {
-    if (!deletePass) { setDeleteMsg('❌ لطفاً رمز عبور را وارد کنید'); return; }
+    if (!deletePass) { setDeleteMsg('لطفاً رمز عبور را وارد کنید'); return; }
     if (!confirm('آیا از حذف کامل حساب کاربری خود مطمئن هستید؟ این عمل قابل بازگشت نیست!')) return;
     setDeleteLoading(true); setDeleteMsg('');
     try {
@@ -149,7 +164,7 @@ export default function ProfilePage() {
       localStorage.clear();
       router.push('/');
     } catch (err: any) {
-      setDeleteMsg('❌ ' + (err.message || 'خطا'));
+      setDeleteMsg(err.message || 'خطا');
     } finally { setDeleteLoading(false); }
   };
 
@@ -171,7 +186,7 @@ export default function ProfilePage() {
           </label>
         </div>
         <h2 className="text-xl font-bold text-gray-800 dark:text-night-text">{user.firstName} {user.lastName || ''}</h2>
-        <p className="text-sm text-gray-500 dark:text-night-muted mt-1">@{user.username || user.phone}</p>
+        <p className="text-sm text-gray-500 dark:text-night-muted mt-1" dir="ltr">{user.phone}</p>
         <p className="text-xs text-gray-400 dark:text-night-muted/70 mt-2">
           عضو از {user.createdAt ? new Date(user.createdAt).toLocaleDateString('fa-IR') : '---'}
         </p>
@@ -201,7 +216,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <div className="text-sm font-bold text-gray-800 dark:text-night-text">اشتراک و پلن</div>
-            <div className="text-xs text-gray-500 dark:text-night-muted">طرح فعلی: {user.plan === 'FREE' ? 'رایگان' : user.plan}</div>
+            <div className="text-xs text-gray-500 dark:text-night-muted">طرح فعلی: {planLabel(user.plan)}</div>
           </div>
         </div>
         <ChevronLeft size={18} className="text-gray-400" />
@@ -244,6 +259,22 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Admin */}
+      {user?.role === 'ADMIN' && (
+        <Link href="/admin" className="card mb-4 shadow-glow hover:shadow-glow-lg transition-all flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <LayoutDashboard className="text-gray-600 dark:text-gray-300" size={20} />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-gray-800 dark:text-night-text">پنل مدیریت</div>
+              <div className="text-xs text-gray-500 dark:text-night-muted">داشبورد مدیریت و پشتیبانی</div>
+            </div>
+          </div>
+          <ChevronLeft size={18} className="text-gray-400" />
+        </Link>
+      )}
 
       {/* Danger Zone */}
       <div className="card mb-4 shadow-glow border border-red-200 dark:border-red-800/50">

@@ -88,9 +88,14 @@ export default function FAQPage() {
           {/* Search */}
           <div className="relative mb-4">
             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="جستجوی سوال..." value={search}
+            <input
+              type="text"
+              placeholder="جستجوی سوال..."
+              value={search}
               onChange={e => setSearch(e.target.value)}
-              className="input-glass pr-9 text-sm" />
+              dir="rtl"
+              className="input-glass pr-11 pl-4 text-sm text-right"
+            />
           </div>
 
           {/* FAQ List */}

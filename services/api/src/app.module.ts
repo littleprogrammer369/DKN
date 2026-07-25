@@ -12,6 +12,8 @@ import { PestsModule } from './pests/pests.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { PrismaModule } from './prisma.module';
+import { AdminModule } from './admin/admin.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { PrismaModule } from './prisma.module';
     PestsModule,
     NotificationsModule,
     ReportsModule,
+    AdminModule,
+    SupportModule,
   ],
 })
 export class AppModule {}
