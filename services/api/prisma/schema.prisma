@@ -48,6 +48,7 @@ model User {
   aiChats         AIChat[]
   notifications   Notification[]
   subscriptions   Subscription[]
+  supportConversations SupportConversation[]
 
   @@map("users")
 }
@@ -277,4 +278,46 @@ model Subscription {
 
   @@index([userId, isActive])
   @@map("subscriptions")
+}
+
+// ─── Support Chat ──────────────────────────────────────────
+
+model SupportConversation {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        String    @default("OPEN") @db.VarChar(20)
+  subject       String?
+  lastMessageAt DateTime? @map("last_message_at") @default(now())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  messages SupportMessage[]
+
+  @@index([userId, status])
+  @@map("support_conversations")
+}
+
+model SupportMessage {
+  id             String            @id @default(uuid()) @db.Uuid
+  conversationId String            @map("conversation_id") @db.Uuid
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String?           @map("sender_id") @db.Uuid
+  senderRole     String?           @db.VarChar(20)
+  text           String            @db.Text
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([conversationId, createdAt])
+  @@map("support_messages")
+}
+
+// ─── App Settings ──────────────────────────────────────────
+
+model AppSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
 }

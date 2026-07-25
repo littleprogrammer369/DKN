@@ -56,7 +56,7 @@ const PLANS = [
   },
   {
     id: 'PREMIUM',
-    name: 'پremium',
+    name: 'پیشرفته',
     desc: 'برای شرکت‌های کشاورزی',
     price: '۶۹۹,۰۰۰',
     unit: 'تومان / ماه',
@@ -83,7 +83,7 @@ const PLANS = [
     icon: Zap,
     popular: false,
     features: [
-      { text: 'همه امکانات Premium', ok: true },
+      { text: 'همه امکانات پیشرفته', ok: true },
       { text: 'API اختصاصی', ok: true },
       { text: 'داشبورد سفارشی', ok: true },
       { text: 'داده‌های چند منبع ماهواره‌ای', ok: true },
@@ -162,10 +162,17 @@ export default function SubscriptionPage() {
                   </div>
 
                   {isSelected && (
-                    <button className="btn-primary mt-4 flex items-center justify-center gap-2">
-                      <Zap size={16} />
-                      {plan.id === 'ENTERPRISE' ? 'تماس با ما' : 'خرید اشتراک'}
-                    </button>
+                    plan.id === 'ENTERPRISE' ? (
+                      <Link href="/support/contact?type=enterprise" className="btn-primary mt-4 flex items-center justify-center gap-2">
+                        <Zap size={16} />
+                        تماس با ما
+                      </Link>
+                    ) : (
+                      <button className="btn-primary mt-4 flex items-center justify-center gap-2">
+                        <Zap size={16} />
+                        خرید اشتراک
+                      </button>
+                    )
                   )}
                 </div>
               );
