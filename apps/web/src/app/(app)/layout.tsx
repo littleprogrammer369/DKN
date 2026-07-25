@@ -11,9 +11,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-9 w-9 shrink-0 dark:hidden" />
+            <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none dark:hidden" draggable={false} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-9 w-9 shrink-0 hidden dark:block" />
+            <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none hidden dark:block" draggable={false} />
             <span className="text-sm font-bold text-gray-700 dark:text-night-text/80">داده کشت نوین</span>
           </div>
           <ThemeToggle />

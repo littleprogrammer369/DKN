@@ -86,7 +86,7 @@ export default function DashboardPage() {
   // Toast welcome on first load
   useEffect(() => {
     if (!loading && user?.firstName) {
-      toast.success('خوش آمدید ' + user.firstName + ' 🌱');
+      toast.success('خوش آمدید ' + user.firstName);
     }
   }, [loading]);
 

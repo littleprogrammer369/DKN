@@ -39,13 +39,13 @@ export class SmsService {
       );
       const data = await res.json();
       if (data?.return?.status === 200) {
-        console.log(`[SMS] ✓ OTP sent to ${phone}`);
+        console.log(`[SMS] OK OTP sent to ${phone}`);
         return true;
       }
-      console.log(`[SMS] ✗ Failed for ${phone}: ${data?.return?.message || 'Unknown error'}`);
+      console.log(`[SMS] x Failed for ${phone}: ${data?.return?.message || 'Unknown error'}`);
       return false;
     } catch (err: any) {
-      console.log(`[SMS] ✗ Error for ${phone}: ${err.message}`);
+      console.log(`[SMS] x Error for ${phone}: ${err.message}`);
       return false;
     }
   }

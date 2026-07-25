@@ -129,7 +129,7 @@ function IrrigationInner() {
     try {
       const res = await fetch('/api/v1/irrigation/log/' + farmId, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) throw new Error();
-      toast.success(body.scheduledAt ? 'آبیاری برنامه‌ریزی شد 💧' : 'آبیاری ثبت شد 💧');
+      toast.success(body.scheduledAt ? 'آبیاری برنامه‌ریزی شد' : 'آبیاری ثبت شد');
       loadFarmData(farmId);
     } catch { toast.error('ثبت آبیاری ناموفق بود.'); }
   };

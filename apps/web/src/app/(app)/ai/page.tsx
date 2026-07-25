@@ -72,8 +72,8 @@ function AiChatInner() {
       const d = await res.json(); if (!res.ok) throw new Error(d.message || 'خطا');
       const model = d.model || '';
       const fallback = ['fallback','config-error','offline','rate-limited','error'].includes(model);
-      return { text: d.response || d.reply || '⚠️ پاسخی دریافت نشد.', model, latency: d.latency, fallback };
-    } catch { return { text:'⚠️ سرویس هوش مصنوعی در دسترس نیست. لطفاً دوباره تلاش کنید.', model:'error', fallback:true }; }
+      return { text: d.response || d.reply || 'پاسخی دریافت نشد.', model, latency: d.latency, fallback };
+    } catch { return { text:'سرویس هوش مصنوعی در دسترس نیست. لطفاً دوباره تلاش کنید.', model:'error', fallback:true }; }
   };
   const handleSend = async (raw?: string) => {
     const message = (raw ?? input).trim(); if (!message || typing) return;

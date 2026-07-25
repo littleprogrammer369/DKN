@@ -41,7 +41,7 @@ export class AiService implements OnModuleInit {
     await this.prisma.aIChat.create({ data: { userId, farmId: farmId || null, role: 'user', content: message } });
     const limit = await this.rateLimiter.checkLimit(userId);
     if (!limit.allowed) {
-      const msg = '⏳ تعداد پیام‌های مجاز امروز شما به پایان رسیده. فردا دوباره تلاش کنید.';
+      const msg = 'تعداد پیام‌های مجاز امروز شما به پایان رسیده. فردا دوباره تلاش کنید.';
       await this.saveResponse(userId, farmId, msg, 'rate-limited', 0, 0);
       return { response: msg, model: 'rate-limited', limit: { remaining: 0, limit: limit.limit } };
     }
@@ -55,7 +55,7 @@ export class AiService implements OnModuleInit {
     if (available.length === 0) {
       const offline = process.env.AI_OFFLINE_FALLBACK === 'true';
       const resp = offline ? this.getMockResponse(message)
-        : '⚠️ کلید هوش مصنوعی (GEMINI_API_KEY) روی سرور تنظیم نشده است. لطفاً کلید رایگان خود را از aistudio.google.com بگیرید، در فایل services/api/.env قرار دهید و سرویس API را ری‌استارت کنید.';
+        : 'کلید هوش مصنوعی (GEMINI_API_KEY) روی سرور تنظیم نشده است. لطفاً کلید رایگان خود را از aistudio.google.com بگیرید، در فایل services/api/.env قرار دهید و سرویس API را ری‌استارت کنید.';
       await this.saveResponse(userId, farmId, resp, offline ? 'offline' : 'config-error', 0, 0);
       return { response: resp, model: offline ? 'offline' : 'config-error', limit };
     }
@@ -67,12 +67,12 @@ export class AiService implements OnModuleInit {
         await this.saveResponse(userId, farmId, result.content, result.model, result.tokens, result.latencyMs);
         this.cache.set(cacheKey, result.content, result.model);
         return { response: result.content, model: result.model, tokens: result.tokens, latency: result.latencyMs, limit };
-      } catch (err: any) { lastError = `${provider.name}: ${err.message || 'unknown'}`; console.log(`[AI] ✗ ${provider.name}: ${err.message}`); }
+      } catch (err: any) { lastError = `${provider.name}: ${err.message || 'unknown'}`; console.log(`[AI] x ${provider.name}: ${err.message}`); }
     }
     console.log(`[AI] all providers failed: ${lastError}`);
     const offline = process.env.AI_OFFLINE_FALLBACK === 'true';
     const resp = offline ? this.getMockResponse(message)
-      : '⚠️ در حال حاضر نتوانستم به سرویس هوش مصنوعی متصل شوم. لطفاً بعداً دوباره تلاش کنید. (جزئیات خطا در لاگ سرور ثبت شد — دسترسی به generativelanguage.googleapis.com و اعتبار کلید Gemini را بررسی کنید.)';
+      : 'در حال حاضر نتوانستم به سرویس هوش مصنوعی متصل شوم. لطفاً بعداً دوباره تلاش کنید. (جزئیات خطا در لاگ سرور ثبت شد — دسترسی به generativelanguage.googleapis.com و اعتبار کلید Gemini را بررسی کنید.)';
     await this.saveResponse(userId, farmId, resp, 'fallback', 0, 0);
     return { response: resp, model: 'fallback', error: lastError, limit };
   }

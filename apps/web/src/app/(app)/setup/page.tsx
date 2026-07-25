@@ -8,7 +8,7 @@ import { CROPS } from '@/lib/crops';
 import {
   Sprout, Wheat, Loader2, Navigation, LocateFixed,
   ChevronRight, ChevronLeft,
-  Trash2, Undo2,
+  Trash2, Undo2, Check,
 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import Dropdown from '@/components/Dropdown';
@@ -141,7 +141,7 @@ function SetupPageInner() {
     setGeoLoading(true);
     if (!navigator.geolocation) { toast.error('مرورگر از موقعیت‌یاب پشتیبانی نمی‌کند.'); setGeoLoading(false); return; }
     navigator.geolocation.getCurrentPosition(
-      (pos) => { setFocus([pos.coords.latitude, pos.coords.longitude]); toast.success('موقعیت شما روی نقشه اعمال شد 📍'); setGeoLoading(false); },
+      (pos) => { setFocus([pos.coords.latitude, pos.coords.longitude]); toast.success('موقعیت شما روی نقشه اعمال شد'); setGeoLoading(false); },
       () => { toast.error('دسترسی به موقعیت مکانی داده نشد.'); setGeoLoading(false); },
       { enableHighAccuracy: true, timeout: 8000 },
     );
@@ -188,7 +188,7 @@ function SetupPageInner() {
               : step === s ? 'bg-brand-green text-white ring-4 ring-brand-green/20 scale-110'
               : 'bg-white/10 text-gray-400 dark:text-night-muted border border-white/10'
             }`}>
-              {step > s ? '✓' : s}
+              {step > s ? <Check size={12} className="inline" /> : s}
             </div>
             {i < 2 && (
               <div className={`w-10 h-0.5 mx-1 rounded ${step > s ? 'bg-brand-green' : 'bg-white/10'}`} />
@@ -264,7 +264,7 @@ function SetupPageInner() {
                     </span>
                     <span className={`text-xs font-bold ${sel ? 'text-brand-green' : 'text-gray-600 dark:text-night-text'}`}>{crop.label}</span>
                     {sel && (
-                      <span className="absolute top-1 left-1 w-4 h-4 rounded-full bg-brand-green text-white flex items-center justify-center text-[10px]">✓</span>
+                      <span className="absolute top-1 left-1 w-4 h-4 rounded-full bg-brand-green text-white flex items-center justify-center"><Check size={12} /></span>
                     )}
                   </button>
                 );

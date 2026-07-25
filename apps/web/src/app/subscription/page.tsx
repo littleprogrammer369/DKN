@@ -143,7 +143,7 @@ export default function SubscriptionPage() {
                         <p className="text-[10px] text-gray-500 dark:text-night-muted">{plan.desc}</p>
                       </div>
                     </div>
-                    <div className="text-left">
+                    <div className="text-right">
                       <div className="text-lg font-extrabold text-gray-800 dark:text-night-text">{plan.price}</div>
                       {plan.unit && <div className="text-[8px] text-gray-400">{plan.unit}</div>}
                     </div>

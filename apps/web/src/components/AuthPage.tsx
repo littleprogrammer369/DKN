@@ -150,7 +150,7 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
         )}
         <div className="mb-8 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-app-icon.svg" alt="داده کشت نوین" className="w-20 h-20 mx-auto mb-4 object-contain drop-shadow-[0_8px_24px_rgba(34,197,94,0.35)]" />
+          <img src="/brand/logo-app-icon.svg" alt="داده کشت نوین" className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-[0_8px_24px_rgba(34,197,94,0.35)] select-none pointer-events-none" draggable={false} />
           <h1 className="text-2xl font-extrabold text-gray-800 dark:text-night-text">داده کشت نوین</h1>
           <p className="text-sm text-gray-500 dark:text-night-muted mt-1">هوش مصنوعی در خدمت کشاورزی</p>
         </div>

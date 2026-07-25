@@ -221,7 +221,7 @@ function PestsInner() {
                 <div className="text-xs text-gray-500 dark:text-night-muted text-right mt-1">{a.body}</div>
               </div>
             )) : (
-              <div className="card p-3 text-xs text-green-600 dark:text-green-400 text-right flex items-center justify-end gap-1">هشدار فعالی نیست — وضعیت پایدار است ✅</div>
+              <div className="card p-3 text-xs text-green-600 dark:text-green-400 text-right flex items-center justify-end gap-1"><CheckCircle2 size={14} />هشدار فعالی نیست — وضعیت پایدار است</div>
             )}
           </div>
           {likely.length > 0 && (

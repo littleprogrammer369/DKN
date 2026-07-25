@@ -47,9 +47,9 @@ export default function LandingClient() {
             <Link href="/" className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-8 w-8 shrink-0 dark:hidden" />
+              <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none dark:hidden" draggable={false} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-8 w-8 shrink-0 hidden dark:block" />
+              <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none hidden dark:block" draggable={false} />
               <span className="font-extrabold text-gray-900 dark:text-white">داده کشت نوین</span>
             </Link>
             </Link>
@@ -280,9 +280,9 @@ export default function LandingClient() {
             <div className="sm:col-span-2 lg:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-8 w-8 shrink-0 dark:hidden" />
+                <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none dark:hidden" draggable={false} />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-8 w-8 shrink-0 hidden dark:block" />
+                <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none hidden dark:block" draggable={false} />
                 <span className="font-extrabold text-gray-900 dark:text-white">داده کشت نوین</span>
               </Link>
               <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">هوش مصنوعی در خدمت کشاورزی</p>
