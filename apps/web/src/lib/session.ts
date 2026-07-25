@@ -64,6 +64,8 @@ export function saveSession(token: string): void {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     // Keep legacy keys for backward compatibility
     localStorage.setItem('token', token);
+    // Notify other components
+    window.dispatchEvent(new Event('session-change'));
   } catch {
     // localStorage unavailable
   }
@@ -114,6 +116,8 @@ export function clearSession(): void {
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // Notify other components
+    window.dispatchEvent(new Event('session-change'));
   } catch {
     // ignore
   }

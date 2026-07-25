@@ -7,6 +7,7 @@ import {
   User, RefreshCw, Satellite
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { getAuthToken, isSessionValid, clearSession } from '@/lib/session';
 import { TempHumidityChart, PrecipBarChart } from '@/components/WeatherChart';
 import SatelliteCard from '@/components/SatelliteCard';
 import MonthWeatherWidget from '@/components/MonthWeather';
@@ -37,8 +38,12 @@ export default function DashboardPage() {
 
   const loadData = () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    if (!token) { router.push('/'); return; }
+    if (!isSessionValid()) {
+      clearSession();
+      router.push('/');
+      return;
+    }
+    const token = getAuthToken();
 
     Promise.all([
       fetch('/api/v1/auth/profile', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()),

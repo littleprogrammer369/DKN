@@ -33,6 +33,11 @@ export default function LandingClient() {
     setMounted(true);
     migrateLegacyToken();
     setLoggedIn(isSessionValid());
+
+    // Re-check session when login/logout happens (e.g. from another tab/component)
+    const onSessionChange = () => setLoggedIn(isSessionValid());
+    window.addEventListener('session-change', onSessionChange);
+    return () => window.removeEventListener('session-change', onSessionChange);
   }, []);
 
   const toggleFaq = (i: number) => setOpenFaq(openFaq === i ? null : i);
