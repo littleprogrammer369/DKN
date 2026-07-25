@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class SupportService {
     });
 
     if (!conversation || conversation.userId !== userId) {
-      throw new BadRequestException('مکالمه یافت نشد');
+      throw new ForbiddenException('مکالمه یافت نشد');
     }
 
     return this.prisma.supportMessage.findMany({
@@ -44,7 +44,7 @@ export class SupportService {
     });
 
     if (!conversation || conversation.userId !== userId) {
-      throw new BadRequestException('مکالمه یافت نشد');
+      throw new ForbiddenException('مکالمه یافت نشد');
     }
 
     const message = await this.prisma.supportMessage.create({

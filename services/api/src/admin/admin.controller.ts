@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Patch, Put, Body, Query, Param, UseGuards, Request } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
 
 @Controller('admin')
-@UseGuards(AdminGuard)
+@UseGuards(AuthGuard('jwt'), AdminGuard)
 export class AdminController {
   constructor(private adminService: AdminService) {}
 

@@ -5,5 +5,5 @@
   "lang": "fa", "dir": "rtl",
   "start_url": "/", "scope": "/", "display": "standalone",
   "background_color": "#0A1A12", "theme_color": "#2BB673",
-  "icons": [ { "src": "/brand/icon.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" } ]
+  "icons": [ { "src": "/brand/logo-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" } ]
 }

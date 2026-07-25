@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   themeColor: "#2BB673",
   manifest: "/manifest.json",
   icons: {
-    icon: [{ url: "/brand/icon.png", type: "image/png" }],
-    apple: [{ url: "/brand/icon.png" }],
+    icon: [{ url: "/brand/logo-app-icon.svg", type: "image/svg+xml", sizes: "any" }],
+    apple: [{ url: "/brand/logo-app-icon.svg" }],
   },
-  openGraph: { title: "داده کشت نوین", description: "هوش مصنوعی در خدمت کشاورزی", images: ["/brand/icon.png"] },
-  twitter: { card: "summary", title: "داده کشت نوین", images: ["/brand/icon.png"] },
+  openGraph: { title: "داده کشت نوین", description: "هوش مصنوعی در خدمت کشاورزی", images: ["/brand/logo-app-icon.svg"] },
+  twitter: { card: "summary", title: "داده کشت نوین", images: ["/brand/logo-app-icon.svg"] },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

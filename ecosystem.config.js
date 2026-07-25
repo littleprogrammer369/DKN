@@ -5,10 +5,9 @@ module.exports = {
   apps: [
     {
       name: 'dkn-api',
-      cwd: './services/api',
-      script: 'dist/main.js',
-      instances: 2,
-      exec_mode: 'cluster',
+      script: 'services/api/dist/main.js',
+      instances: 1,
+      exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
