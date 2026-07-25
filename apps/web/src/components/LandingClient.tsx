@@ -59,6 +59,7 @@ export default function LandingClient() {
               <a href="#how-it-works" className="text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">روش کار</a>
               <a href="#about" className="text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">درباره ما</a>
               <a href="#faq" className="text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">سوالات متداول</a>
+              <Link href="/terms" className="text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">قوانین و مقررات</Link>
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
@@ -79,6 +80,7 @@ export default function LandingClient() {
               <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">روش کار</a>
               <a href="#about" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">درباره ما</a>
               <a href="#faq" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">سوالات متداول</a>
+              <Link href="/terms" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 dark:text-slate-200 py-2">قوانین و مقررات</Link>
               <div className="flex gap-2 pt-2">
                 <Link href="/auth?mode=login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">ورود</Link>
                 <Link href="/auth?mode=register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600">ثبت‌نام رایگان</Link>
@@ -195,9 +197,16 @@ export default function LandingClient() {
                 <h3 className="font-extrabold text-gray-900 dark:text-white text-lg mb-2">{item.title}</h3>
                 <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{item.desc}</p>
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -left-4 text-emerald-200 dark:text-emerald-800">
-                    <ArrowLeft size={24} />
-                  </div>
+                  <>
+                    {/* Desktop arrow */}
+                    <div className="pointer-events-none absolute left-[-28px] top-1/2 z-10 hidden -translate-y-1/2 md:flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/20 bg-emerald-950/70 text-emerald-300 shadow-lg shadow-emerald-500/10 backdrop-blur">
+                      <ArrowLeft className="h-5 w-5" />
+                    </div>
+                    {/* Mobile arrow */}
+                    <div className="flex md:hidden justify-center mt-6 text-emerald-400/60">
+                      <ChevronDown size={24} />
+                    </div>
+                  </>
                 )}
               </div>
             ))}
@@ -272,50 +281,6 @@ export default function LandingClient() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-white/60 dark:bg-emerald-950/40 border-t border-emerald-100 dark:border-emerald-900/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Link href="/" className="flex items-center gap-2 mb-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo-emblem-light.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none dark:hidden" draggable={false} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo-emblem-dark.svg" alt="داده کشت نوین" className="h-10 w-auto shrink-0 object-contain select-none pointer-events-none hidden dark:block" draggable={false} />
-                <span className="font-extrabold text-gray-900 dark:text-white">داده کشت نوین</span>
-              </Link>
-              <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">هوش مصنوعی در خدمت کشاورزی</p>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-3">لینک‌های سریع</h4>
-              <div className="space-y-2">
-                <Link href="/auth?mode=login" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">ورود</Link>
-                <Link href="/auth?mode=register" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">ثبت‌نام</Link>
-                <Link href="/faq" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">سوالات متداول</Link>
-                <Link href="/support/contact" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">تماس با پشتیبانی</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-3">محصول</h4>
-              <div className="space-y-2">
-                <a href="#features" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">امکانات</a>
-                <a href="#how-it-works" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">روش کار</a>
-                <Link href="/subscription" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">اشتراک و پلن</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-3">قوانین</h4>
-              <div className="space-y-2">
-                <Link href="/terms" className="block text-sm text-gray-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition">قوانین و مقررات</Link>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-emerald-100 dark:border-emerald-900/60 text-center">
-            <p className="text-xs text-gray-500 dark:text-slate-400">© {new Date().getFullYear()} داده کشت نوین. تمامی حقوق محفوظ است.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
