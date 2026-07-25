@@ -142,7 +142,7 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
 
   return (
     <ThemeProvider>
-      <div className="flex flex-col justify-center items-center min-h-screen px-5 py-10 transition-colors duration-300 bg-[linear-gradient(160deg,#F7FBF8_0%,#EEF8F3_50%,#F5FAFA_100%)] dark:bg-[#0A1A12]">
+      <div className="flex flex-col justify-center items-center min-h-screen px-5 py-10">
         <ThemeToggleInline />
         {mounted && hasToken && (
           <button onClick={goToDashboard} className="absolute top-4 right-4 z-20 px-4 py-2 rounded-full bg-brand-green text-white text-xs font-bold shadow-lg hover:opacity-90 transition">

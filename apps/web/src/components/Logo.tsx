@@ -2,12 +2,12 @@ export default function Logo({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 512 512" className={className} xmlns="http://www.w3.org/2000/svg" role="img" aria-label="داده کشت نوین">
       <defs>
-        <linearGradient id="dknLogoGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#22C55E" />
+        <linearGradient id="dknLogoGrad" gradientUnits="userSpaceOnUse" x1="256" y1="110" x2="256" y2="470">
+          <stop offset="0" stopColor="#34D399" />
           <stop offset="1" stopColor="#16A34A" />
         </linearGradient>
       </defs>
-      <g fill="none" stroke="url(#dknLogoGrad)" strokeWidth="10" opacity="0.22">
+      <g fill="none" stroke="url(#dknLogoGrad)" strokeWidth="10" opacity="0.25">
         <ellipse cx="256" cy="250" rx="172" ry="120" transform="rotate(-20 256 250)" />
       </g>
       <path d="M256 250 L256 372" stroke="url(#dknLogoGrad)" strokeWidth="22" strokeLinecap="round" />
