@@ -12,6 +12,38 @@ const nextConfig = {
       source: '/sw.js',
       headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
     },
+    {
+      source: '/',
+      headers: [
+        { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
+        { key: 'Pragma', value: 'no-cache' },
+        { key: 'Expires', value: '0' },
+      ],
+    },
+    {
+      source: '/auth/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
+        { key: 'Pragma', value: 'no-cache' },
+        { key: 'Expires', value: '0' },
+      ],
+    },
+    {
+      source: '/login',
+      headers: [
+        { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
+        { key: 'Pragma', value: 'no-cache' },
+        { key: 'Expires', value: '0' },
+      ],
+    },
+    {
+      source: '/register',
+      headers: [
+        { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
+        { key: 'Pragma', value: 'no-cache' },
+        { key: 'Expires', value: '0' },
+      ],
+    },
   ],
   // API proxy — در حالت development درخواست‌های /api/* به NestJS هدایت شود
   async rewrites() {
