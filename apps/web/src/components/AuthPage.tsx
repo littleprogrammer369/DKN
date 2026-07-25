@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { onlyDigits } from '@/lib/utils';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sprout, Sun, Moon } from 'lucide-react';
+import Logo from '@/components/Logo';
+import { Key, Mail, Phone, UserPlus, Lock, ArrowLeft, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Sun, Moon } from 'lucide-react';
 
 interface AuthPageProps {
   initialMode?: 'login' | 'register';
@@ -141,7 +142,7 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
 
   return (
     <ThemeProvider>
-      <div className="screen-login active flex flex-col justify-center items-center min-h-screen px-5 py-10 transition-colors duration-300 dark:bg-night-bg">
+      <div className="flex flex-col justify-center items-center min-h-screen px-5 py-10 transition-colors duration-300 bg-[linear-gradient(160deg,#F7FBF8_0%,#EEF8F3_50%,#F5FAFA_100%)] dark:bg-[#0A1A12]">
         <ThemeToggleInline />
         {mounted && hasToken && (
           <button onClick={goToDashboard} className="absolute top-4 right-4 z-20 px-4 py-2 rounded-full bg-brand-green text-white text-xs font-bold shadow-lg hover:opacity-90 transition">
@@ -149,10 +150,7 @@ export default function AuthPage({ initialMode = 'login', onGoToDashboard }: Aut
           </button>
         )}
         <div className="mb-8 text-center">
-          <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-               style={{ background: "linear-gradient(135deg, #2BB673, #22C55E)", boxShadow: "0 8px 32px rgba(43,182,115,0.25)" }}>
-            <Sprout className="text-white" size={36} />
-          </div>
+          <Logo className="w-20 h-20 mx-auto mb-4 drop-shadow-[0_8px_24px_rgba(34,197,94,0.35)]" />
           <h1 className="text-2xl font-extrabold text-gray-800 dark:text-night-text">داده کشت نوین</h1>
           <p className="text-sm text-gray-500 dark:text-night-muted mt-1">هوش مصنوعی در خدمت کشاورزی</p>
         </div>
