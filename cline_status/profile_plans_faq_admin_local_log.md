@@ -42,9 +42,19 @@
 - Updated support chat page to persist messages via backend API
 
 ## Phase 6 — Build/Validate
-- Prisma schema updated and validated
-- Frontend build pending final TypeScript check
+- Prisma schema validated: `pnpm --filter api exec prisma validate` ✅
+- Prisma generate: `pnpm --filter api run prisma:generate` ✅
+- DB sync: `pnpm --filter api exec prisma db push` ✅ (no migration due to shadow DB permissions)
+- API build: `pnpm --filter api build` ✅
+- Web build: `pnpm --filter web build` ✅
 
 ## Phase 7 — Git
-- Commit message prepared
-- Branch prepared for push
+- Commit: `8c125f9` feat: improve profile support flows and add admin panel MVP
+- Pushed: `feature/profile-plans-faq-admin-panel` ✅
+- PR URL: https://github.com/littleprogrammer369/DKN/pull/new/feature/profile-plans-faq-admin-panel
+
+## Not Done / Risks
+- Real admin user not tested with actual ADMIN role in DB
+- Support chat MVP uses localStorage fallback for contact form; backend endpoint not implemented yet
+- .env.example was not committed because `.gitignore` excludes `.env.*`; if needed, add explicitly with `git add -f`
+- Production migration not run; `db push` used for local schema sync only
