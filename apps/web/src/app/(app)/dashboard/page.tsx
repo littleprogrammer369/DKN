@@ -100,14 +100,14 @@ function DashboardInner() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
+        <div className="text-right min-w-0">
+          <p className="text-base font-extrabold text-gray-900 dark:text-white truncate">سلام {user?.firstName || 'کشاورز'}</p>
+          <p className="text-[11px] text-gray-500 dark:text-night-muted">{fa(new Date().toLocaleDateString('en-CA'))}{user?.plan ? ' · ' + (PLAN_FA[user.plan] || user.plan) : ''}</p>
+        </div>
         <div className="flex items-center gap-2">
           <button onClick={() => farmId && loadPanel(farmId)} className="w-9 h-9 rounded-xl bg-white/5 dark:bg-night-surface flex items-center justify-center hover:bg-white/10"><RefreshCw size={15} className="text-gray-400" /></button>
           <NotifBell />
           <button onClick={() => router.push('/profile')} className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xs font-bold">{user?.firstName?.[0] || <User size={14} />}</button>
-        </div>
-        <div className="text-right min-w-0">
-          <p className="text-base font-extrabold text-gray-900 dark:text-white truncate">سلام {user?.firstName || 'کشاورز'}</p>
-          <p className="text-[11px] text-gray-500 dark:text-night-muted">{fa(new Date().toLocaleDateString('en-CA'))}{user?.plan ? ' · ' + (PLAN_FA[user.plan] || user.plan) : ''}</p>
         </div>
       </div>
 
@@ -155,8 +155,8 @@ function DashboardInner() {
           {c && (
             <div className="card p-4">
               <div className="flex items-center justify-between">
-                <W size={44} className={w.c} />
                 <div className="text-right"><div className="text-3xl font-extrabold text-gray-900 dark:text-white">{Math.round(c.temperature)}°</div><div className="text-xs text-gray-500">{c.weatherText}{c.apparentTemperature != null ? ' · احساسی ' + Math.round(c.apparentTemperature) + '°' : ''}</div></div>
+                <W size={44} className={w.c} />
               </div>
               <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/10 text-center">
                 <div><Droplets size={14} className="mx-auto mb-1 text-sky-400" /><div className="text-xs font-bold text-gray-900 dark:text-white">{c.humidity ?? '--'}٪</div><div className="text-[9px] text-gray-400">رطوبت</div></div>
@@ -178,7 +178,7 @@ function DashboardInner() {
 
           {/* Vegetation / satellite */}
           <div className="card p-4">
-            <div className="flex items-center justify-end gap-1 mb-3 text-sm font-bold text-gray-900 dark:text-white"><Satellite size={15} className="text-brand-green" />پوشش گیاهی</div>
+            <div className="flex items-center gap-1.5 justify-between mb-3 text-sm font-bold text-gray-900 dark:text-white"><span>پوشش گیاهی</span><Satellite size={15} className="text-brand-green" /></div>
             {sat?.latest ? (
               <>
                 <div className="grid grid-cols-4 gap-2 text-center">
@@ -195,14 +195,15 @@ function DashboardInner() {
           {/* Irrigation + Pests */}
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => router.push('/irrigation')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
-              <div className="flex items-center justify-between"><Droplets size={18} className="text-sky-400" /><span className="text-[10px] text-gray-400">آبیاری</span></div>
-              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">{irr?.daysSince != null ? fa(irr.daysSince) + ' روز پیش' : 'ثبت‌نشده'}</div>
-              <div className="prog-bg mt-2"><div className="prog-fill" style={{ width: irrPct + '%' }} /></div>
+              <Droplets size={18} className="text-sky-400" />
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">آبیاری</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{irr?.daysSince != null ? `${fa(irr.daysSince)} روز پیش` : 'ثبت‌نشده'}</div>
+              <div className="prog-bg mt-2"><div className="prog-fill" style={{ width: `${irrPct}%` }} /></div>
             </button>
             <button onClick={() => router.push('/pests')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
-              <div className="flex items-center justify-between"><Bug size={18} className={pests?.highOrCritical ? 'text-red-400' : 'text-brand-green'} /><span className="text-[10px] text-gray-400">آفات</span></div>
-              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">{pests?.active ? fa(pests.active) + ' گزارش' : 'بدون گزارش'}</div>
-              <div className="text-[10px] text-gray-400 mt-1 truncate">{pests?.latest ? pests.latest.pestName : 'وضعیت پایدار'}</div>
+              <Bug size={18} className={pests?.highOrCritical ? 'text-red-400' : 'text-brand-green'} />
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">آفات</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{pests?.active ? `${fa(pests.active)} گزارش` : 'وضعیت پایدار'}</div>
             </button>
           </div>
 
@@ -222,8 +223,11 @@ function DashboardInner() {
 
           {/* AI entry + Reports/Farms */}
           <button onClick={() => router.push('/ai?farm=' + farmId)} className="card p-4 w-full flex items-center justify-between gap-3 hover:shadow-glow-lg transition-all">
+            <div className="text-right min-w-0">
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white">پرسش از دستیار هوشمند</div>
+              <div className="text-[11px] text-gray-400">تحلیل اختصاصی این مزرعه</div>
+            </div>
             <div className="w-10 h-10 rounded-xl bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0"><Sparkles size={18} /></div>
-            <div className="text-right"><div className="text-sm font-extrabold text-gray-900 dark:text-white">پرسش از دستیار هوشمند</div><div className="text-[11px] text-gray-400">تحلیل اختصاصی این مزرعه</div></div>
           </button>
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => router.push('/pests')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
