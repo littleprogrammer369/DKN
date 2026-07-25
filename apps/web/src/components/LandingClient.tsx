@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowRight } from 'lucide-react';
+import { Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowLeft } from 'lucide-react';
 
 export default function LandingClient() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,7 +79,6 @@ export default function LandingClient() {
                   ورود به حساب
                 </Link>
               </div>
-              <p className="mt-4 text-xs text-gray-500 dark:text-night-muted">نسخه MVP برای پایش مزرعه، مشاوره هوشمند و تصمیم‌گیری سریع‌تر</p>
             </div>
 
             {/* Hero visual */}
@@ -169,7 +168,7 @@ export default function LandingClient() {
                 <p className="text-sm text-gray-600 dark:text-night-muted leading-relaxed">{item.desc}</p>
                 {i < 2 && (
                   <div className="hidden md:block absolute top-1/2 -left-4 text-gray-300 dark:text-night-border">
-                    <ArrowRight size={24} />
+                    <ArrowLeft size={24} />
                   </div>
                 )}
               </div>
@@ -194,21 +193,6 @@ export default function LandingClient() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Plans Teaser */}
-      <section id="plans" className="py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center glass p-8 sm:p-12 rounded-3xl">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-4">شروع با پلن رایگان</h2>
-            <p className="text-gray-600 dark:text-night-muted mb-8 leading-relaxed">
-              در نسخه فعلی می‌توانید با پلن رایگان از امکانات پایه استفاده کنید. پلن‌های حرفه‌ای‌تر برای گزارش‌های پیشرفته، تحلیل‌های اختصاصی و امکانات سازمانی در نسخه‌های بعدی اضافه می‌شوند.
-            </p>
-            <Link href="/auth?mode=register" className="inline-block px-10 py-3.5 rounded-full text-base font-bold text-white bg-gradient-to-r from-[#2BB673] to-[#22C55E] shadow-lg shadow-green-500/20 hover:opacity-90 transition">
-              ثبت‌نام رایگان
-            </Link>
           </div>
         </div>
       </section>
@@ -242,30 +226,6 @@ export default function LandingClient() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 dark:border-night-border py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="text-center md:text-right">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2BB673, #22C55E)' }}>
-                  <Sprout className="text-white" size={16} />
-                </div>
-                <span className="font-bold text-gray-800 dark:text-night-text">داده کشت نوین</span>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-night-muted">هوش مصنوعی در خدمت کشاورزی</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-6">
-              <Link href="/auth?mode=login" className="text-sm text-gray-600 dark:text-night-muted hover:text-brand-green transition">ورود</Link>
-              <Link href="/auth?mode=register" className="text-sm text-gray-600 dark:text-night-muted hover:text-brand-green transition">ثبت‌نام</Link>
-              <Link href="/auth?mode=login" className="text-sm text-gray-600 dark:text-night-muted hover:text-brand-green transition">داشبورد</Link>
-            </div>
-          </div>
-          <div className="mt-10 pt-6 border-t border-gray-100 dark:border-night-border/40 text-center">
-            <p className="text-xs text-gray-400 dark:text-night-muted">&copy; داده کشت نوین — همه حقوق محفوظ است.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
   );
 }
