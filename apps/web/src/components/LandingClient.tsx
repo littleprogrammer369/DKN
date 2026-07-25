@@ -2,7 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowLeft } from 'lucide-react';
+import { Sprout, Bot, Map, CloudSun, Droplets, Bug, Satellite, Bell, BarChart3, CheckCircle, ChevronDown, ChevronUp, Menu, X, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/lib/theme';
+
+function ThemeToggleInline() {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      className="absolute top-4 left-4 w-10 h-10 rounded-full glass dark:bg-night-card/80 dark:border-night-border/60 flex items-center justify-center text-lg z-20 transition-all hover:scale-110"
+      aria-label="toggle theme"
+    >
+      {theme === 'day' ? <Moon size={18} /> : <Sun size={18} />}
+    </button>
+  );
+}
 
 export default function LandingClient() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -16,7 +30,8 @@ export default function LandingClient() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white dark:from-night-bg dark:to-night-surface">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass dark:bg-night-card/60 border-b border-green-100/50 dark:border-night-border/40">
+      <header className="sticky top-0 z-50 glass dark:bg-night-card/60 border-b border-green-100/50 dark:border-night-border/40 relative">
+        <ThemeToggleInline />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">

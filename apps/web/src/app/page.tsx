@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { ThemeProvider } from '@/lib/theme';
 import LandingClient from '@/components/LandingClient';
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLandingPage() {
-  return <LandingClient />;
+  return (
+    <ThemeProvider>
+      <LandingClient />
+    </ThemeProvider>
+  );
 }
