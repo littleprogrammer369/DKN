@@ -1,258 +1,255 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Sprout, Sun, CloudRain, Wind, Droplets, Thermometer,
-  Cloud, Bug, Sparkles, AlertTriangle, AlertCircle,
-  User, RefreshCw, Satellite
+  Sprout, Sun, Cloud, CloudRain, CloudSun, Wind, Droplets, Thermometer, Bug, Sparkles, Bot,
+  AlertTriangle, AlertCircle, Info, Satellite, RefreshCw, Bell, ClipboardList, Plus, Loader2, User,
 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { toast } from '@/lib/toast';
 import { getAuthToken, isSessionValid, clearSession } from '@/lib/session';
-import { TempHumidityChart, PrecipBarChart } from '@/components/WeatherChart';
-import SatelliteCard from '@/components/SatelliteCard';
-import MonthWeatherWidget from '@/components/MonthWeather';
+import Dropdown from '@/components/Dropdown';
+import { fa, gregorianToJalaliParts } from '@/lib/jalali';
+import { cropLabel } from '@/lib/crops';
 
-const DAY_NAMES_FA = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
+const DAY = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
+const H = () => ({ Authorization: 'Bearer ' + (getAuthToken() || '') });
+const PLAN_FA: Record<string, string> = { FREE: 'رایگان', BASIC: 'پایه', PREMIUM: 'حرفه‌ای', ENTERPRISE: 'سازمانی' };
 
-function getPersianDayName(dateStr: string): string {
-  const d = new Date(dateStr);
-  return DAY_NAMES_FA[d.getDay()] ?? '';
+function wmoIcon(code?: number | null) {
+  if (code == null) return { I: CloudSun, c: 'text-gray-400' };
+  if (code <= 1) return { I: Sun, c: 'text-amber-400' };
+  if (code <= 3) return { I: CloudSun, c: 'text-amber-300' };
+  if (code <= 48) return { I: Cloud, c: 'text-gray-300' };
+  if (code <= 67 || (code >= 80 && code <= 82)) return { I: CloudRain, c: 'text-sky-400' };
+  if ((code >= 71 && code <= 77) || code >= 85) return { I: Cloud, c: 'text-cyan-200' };
+  if (code >= 95) return { I: CloudRain, c: 'text-indigo-300' };
+  return { I: Cloud, c: 'text-gray-300' };
 }
 
-function ForecastIcon({ precip, tempMax }: { precip?: number | null; tempMax?: number }) {
-  const cls = 'w-5 h-5 flex-shrink-0';
-  if (precip != null && precip > 50) return <CloudRain className={cls + ' text-blue-400'} />;
-  if (precip != null && precip > 20) return <Cloud className={cls + ' text-blue-300'} />;
-  if (tempMax != null && tempMax > 32) return <Sun className={cls + ' text-amber-400'} />;
-  return <Cloud className={cls + ' text-text-tertiary dark:text-white/60'} />;
+function NotifBell() {
+  const [n, setN] = useState(0); const [open, setOpen] = useState(false); const [list, setList] = useState<any[]>([]);
+  const ref = useRef<HTMLButtonElement>(null); const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  useEffect(() => { fetch('/api/v1/notifications/unread-count', { headers: H() }).then(r => r.ok ? r.json() : 0).then((d: any) => setN(typeof d === 'number' ? d : (d?.count ?? 0))).catch(() => {}); }, []);
+  const toggle = async () => {
+    const r = ref.current?.getBoundingClientRect();
+    if (r) setPos({ top: r.bottom + 6, left: Math.max(8, r.right - 320) });
+    const willOpen = !open; setOpen(willOpen);
+    if (willOpen) {
+      const l = await fetch('/api/v1/notifications', { headers: H() }).then(r => r.ok ? r.json() : []).catch(() => []);
+      setList(Array.isArray(l) ? l : []);
+      fetch('/api/v1/notifications/read-all', { method: 'POST', headers: H() }).catch(() => {}); setN(0);
+    }
+  };
+  return (
+    <div className="relative">
+      <button ref={ref} onClick={toggle} className="relative w-9 h-9 rounded-xl bg-white/5 dark:bg-night-surface flex items-center justify-center hover:bg-white/10">
+        <Bell size={16} className="text-gray-400" />
+        {n > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{fa(n)}</span>}
+      </button>
+      {open && pos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', top: pos.top, left: pos.left }} className="z-50 w-80 max-h-80 overflow-y-auto card p-2 text-right">
+            <div className="text-xs font-bold text-gray-900 dark:text-white px-2 py-1">اعلان‌ها</div>
+            {list.length === 0 ? <div className="text-[11px] text-gray-500 px-2 py-3 text-center">اعلان جدیدی نیست</div> :
+              list.slice(0, 8).map((x: any) => (
+                <div key={x.id} className="px-2 py-2 rounded-lg hover:bg-white/5">
+                  <div className="text-xs font-bold text-gray-800 dark:text-white/90">{x.title}</div>
+                  <div className="text-[11px] text-gray-500">{x.body}</div>
+                </div>))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DashboardInner() {
+  const router = useRouter();
+  const sp = useSearchParams(); const farmParam = sp.get('farm');
+  const [user, setUser] = useState<any>(null);
+  const [farms, setFarms] = useState<any[]>([]);
+  const [farmId, setFarmId] = useState<string>('');
+  const [panel, setPanel] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadBase = async () => {
+    const [u, f] = await Promise.all([
+      fetch('/api/v1/auth/profile', { headers: H() }).then(r => r.json()).catch(() => ({})),
+      fetch('/api/v1/farms', { headers: H() }).then(r => r.json()).catch(() => []),
+    ]);
+    if (u?.firstName) { setUser(u); localStorage.setItem('user', JSON.stringify(u)); }
+    const fl = Array.isArray(f) ? f : []; setFarms(fl);
+    setFarmId((farmParam && fl.some((x: any) => x.id === farmParam)) ? farmParam : (fl[0]?.id || ''));
+  };
+  const loadPanel = async (id: string) => { setLoading(true); const d = await fetch('/api/v1/weather/panel/' + id, { headers: H() }).then(r => r.ok ? r.json() : null).catch(() => null); setPanel(d); setLoading(false); };
+  useEffect(() => { loadBase().catch(() => setLoading(false)); }, []);
+  useEffect(() => { if (farmId) loadPanel(farmId); }, [farmId]);
+
+  if (loading && !panel) return <div className="space-y-3 animate-pulse">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="card h-24 rounded-2xl bg-white/5" />)}</div>;
+
+  const c = panel?.current; const forecast = panel?.forecast || []; const series = panel?.series || []; const stats = panel?.seriesStats;
+  const sat = panel?.satellite; const irr = panel?.irrigation; const pests = panel?.pests; const kpis = panel?.kpis || {};
+  const alerts = panel?.alerts || []; const rec = panel?.recommendation || { label: 'توصیه هوش مصنوعی', title: '—', body: '' };
+  const health = panel?.healthScore ?? null; const w = wmoIcon(c?.weatherCode); const W = w.I;
+  const trend = (sat?.trend || []).map((s: any) => ({ d: s.date ? fa(gregorianToJalaliParts(s.date).day) : '', ndvi: s.ndvi, evi: s.evi }));
+  const healthColor = health == null ? '#94a3b8' : health >= 70 ? '#22c55e' : health >= 40 ? '#f59e0b' : '#ef4444';
+  const irrPct = irr?.daysSince != null ? Math.min(100, Math.round((irr.daysSince / (irr.cycleDays || 7)) * 100)) : 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-right min-w-0">
+          <p className="text-base font-extrabold text-gray-900 dark:text-white truncate">سلام {user?.firstName || 'کشاورز'}</p>
+          <p className="text-[11px] text-gray-500 dark:text-night-muted">{fa(new Date().toLocaleDateString('en-CA'))}{user?.plan ? ' · ' + (PLAN_FA[user.plan] || user.plan) : ''}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => farmId && loadPanel(farmId)} className="w-9 h-9 rounded-xl bg-white/5 dark:bg-night-surface flex items-center justify-center hover:bg-white/10"><RefreshCw size={15} className="text-gray-400" /></button>
+          <NotifBell />
+          <button onClick={() => router.push('/profile')} className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xs font-bold">{user?.firstName?.[0] || <User size={14} />}</button>
+        </div>
+      </div>
+
+      {/* Farm selector */}
+      {farms.length > 0 && <Dropdown value={farmId} onChange={v => setFarmId(String(v))} options={farms.map((f: any) => ({ value: f.id, label: f.name }))} placeholder="انتخاب مزرعه" />}
+
+      {!panel || panel.error ? (
+        <div className="card p-6 text-center text-sm text-gray-500">برای این مزرعه داده‌ای در دسترس نیست.</div>
+      ) : (
+        <>
+          {/* SMART SUMMARY */}
+          <div className="card p-3 shadow-glow space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-white/5 dark:bg-night-surface/60 border border-white/5 p-4 text-right">
+                <div className="text-[11px] text-gray-400">دما (امروز)</div>
+                <div className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{c ? Math.round(c.temperature) + '°C' : '--'}</div>
+              </div>
+              <div className="rounded-2xl bg-white/5 dark:bg-night-surface/60 border border-white/5 p-4 text-right">
+                <div className="text-[11px] text-gray-400">سلامت مزرعه</div>
+                <div className="text-2xl font-extrabold mt-1" style={{ color: healthColor }}>{health != null ? fa(health) + '٪' : '—'}</div>
+                <div className="prog-bg mt-2"><div className="prog-fill" style={{ width: (health ?? 0) + '%', background: healthColor }} /></div>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-white/5 dark:bg-night-surface/60 border border-white/5 p-4 flex items-center justify-between gap-3">
+              <div className="text-right min-w-0">
+                <div className="text-[11px] text-gray-400">{rec.label}</div>
+                <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-0.5">{rec.title}</div>
+                {rec.body && <div className="text-[11px] text-gray-400 mt-0.5">{rec.body}</div>}
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0"><Bot size={20} /></div>
+            </div>
+          </div>
+
+          {/* Alerts */}
+          {alerts.length > 0 && (
+            <div className="space-y-2">
+              {alerts.map((a: any, i: number) => { const danger = a.severity === 'danger'; const warn = a.severity === 'warning'; const I = danger ? AlertCircle : warn ? AlertTriangle : Info; return (
+                <div key={i} className={'card p-3 border flex items-start gap-2 ' + (danger ? 'border-red-500/30 text-red-600 dark:text-red-300' : warn ? 'border-amber-500/30 text-amber-700 dark:text-amber-300' : 'border-brand-green/30 text-brand-green')}>
+                  <I size={16} className="mt-0.5 shrink-0" /><div className="text-right"><span className="text-sm font-bold">{a.title}</span> <span className="text-[11px] opacity-90">{a.body}</span></div>
+                </div>); })}
+            </div>
+          )}
+
+          {/* Weather: current + 5-day */}
+          {c && (
+            <div className="card p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-right"><div className="text-3xl font-extrabold text-gray-900 dark:text-white">{Math.round(c.temperature)}°</div><div className="text-xs text-gray-500">{c.weatherText}{c.apparentTemperature != null ? ' · احساسی ' + Math.round(c.apparentTemperature) + '°' : ''}</div></div>
+                <W size={44} className={w.c} />
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/10 text-center">
+                <div><Droplets size={14} className="mx-auto mb-1 text-sky-400" /><div className="text-xs font-bold text-gray-900 dark:text-white">{c.humidity ?? '--'}٪</div><div className="text-[9px] text-gray-400">رطوبت</div></div>
+                <div><Wind size={14} className="mx-auto mb-1 text-teal-400" /><div className="text-xs font-bold text-gray-900 dark:text-white">{c.windSpeed ?? '--'}</div><div className="text-[9px] text-gray-400">باد</div></div>
+                <div><CloudRain size={14} className="mx-auto mb-1 text-sky-300" /><div className="text-xs font-bold text-gray-900 dark:text-white">{c.precipitation ?? 0}</div><div className="text-[9px] text-gray-400">بارش</div></div>
+              </div>
+              {forecast.length > 0 && (
+                <div className="grid grid-cols-5 gap-1.5 mt-3">
+                  {forecast.slice(0, 5).map((d: any, i: number) => { const f = wmoIcon(d.weatherCode); const F = f.I; return (
+                    <div key={i} className="flex flex-col items-center gap-1 rounded-xl bg-white/5 p-2">
+                      <div className="text-[9px] text-gray-500">{DAY[new Date(d.date).getDay()]}</div><F size={16} className={f.c} />
+                      <div className="text-[11px] font-bold text-gray-900 dark:text-white">{d.tempMax != null ? Math.round(d.tempMax) : '--'}°</div>
+                      <div className="text-[9px] text-sky-400">{d.dayPrecipitation != null ? fa(d.dayPrecipitation) + '٪' : ''}</div>
+                    </div>); })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Vegetation / satellite */}
+          <div className="card p-4">
+            <div className="flex items-center gap-1.5 justify-between mb-3 text-sm font-bold text-gray-900 dark:text-white"><span>پوشش گیاهی</span><Satellite size={15} className="text-brand-green" /></div>
+            {sat?.latest ? (
+              <>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {([['NDVI', sat.latest.ndvi], ['EVI', sat.latest.evi], ['NDWI', sat.latest.ndwi], ['MSI', sat.latest.msi]] as any).map(([k, v]: any) => (
+                    <div key={k} className="rounded-xl bg-white/5 p-2"><div className="text-sm font-extrabold text-brand-green">{v != null ? fa(v) : '—'}</div><div className="text-[9px] text-gray-400">{k}</div></div>))}
+                </div>
+                {trend.length > 1 && <div style={{ width: '100%', height: 120 }} className="mt-3"><ResponsiveContainer><LineChart data={trend}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="d" tick={{ fontSize: 9, fill: '#94a3b8' }} /><YAxis domain={[0, 1]} tick={{ fontSize: 9, fill: '#94a3b8' }} width={24} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="ndvi" stroke="#22c55e" dot={false} strokeWidth={2} name="NDVI" /><Line type="monotone" dataKey="evi" stroke="#38bdf8" dot={false} strokeWidth={2} name="EVI" /></LineChart></ResponsiveContainer></div>}
+              </>
+            ) : (
+              <div className="text-center py-4"><Satellite size={26} className="mx-auto text-gray-400 mb-2" /><p className="text-sm text-gray-500">دادهٔ ماهواره‌ای هنوز موجود نیست.</p><p className="text-[11px] text-gray-400 mt-1">پس از تعیین محدودهٔ مزرعه، شاخص‌ها اینجا نمایش داده می‌شوند.</p></div>
+            )}
+          </div>
+
+          {/* Irrigation + Pests */}
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => router.push('/irrigation')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
+              <Droplets size={18} className="text-sky-400" />
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">آبیاری</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{irr?.daysSince != null ? `${fa(irr.daysSince)} روز پیش` : 'ثبت‌نشده'}</div>
+              <div className="prog-bg mt-2"><div className="prog-fill" style={{ width: `${irrPct}%` }} /></div>
+            </button>
+            <button onClick={() => router.push('/pests')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
+              <Bug size={18} className={pests?.highOrCritical ? 'text-red-400' : 'text-brand-green'} />
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">آفات</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{pests?.active ? `${fa(pests.active)} گزارش` : 'وضعیت پایدار'}</div>
+            </button>
+          </div>
+
+          {/* 30-day trend */}
+          {series.length > 1 && (
+            <div className="card p-4 space-y-3">
+              <div className="text-right text-sm font-bold text-gray-900 dark:text-white">روند ۳۰ روزه</div>
+              <div style={{ width: '100%', height: 150 }}><ResponsiveContainer><LineChart data={series}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="date" tickFormatter={v => fa(gregorianToJalaliParts(v).day)} tick={{ fontSize: 9, fill: '#94a3b8' }} minTickGap={26} /><YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} width={24} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="tmax" stroke="#f59e0b" dot={false} strokeWidth={2} name="بیشینه" /><Line type="monotone" dataKey="tmin" stroke="#38bdf8" dot={false} strokeWidth={2} name="کمینه" /></LineChart></ResponsiveContainer></div>
+              {stats && <div className="grid grid-cols-4 gap-2 text-center text-[10px] text-gray-400">
+                <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-sky-400">{fa(stats.rainyDays)}</div>روز بارانی</div>
+                <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-sky-300">{fa(stats.minTemp)}°</div>حداقل</div>
+                <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-amber-400">{fa(stats.maxTemp)}°</div>حداکثر</div>
+                <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-green-400">{fa(stats.avgTemp)}°</div>میانگین</div>
+              </div>}
+            </div>
+          )}
+
+          {/* AI entry + Reports/Farms */}
+          <button onClick={() => router.push('/ai?farm=' + farmId)} className="card p-4 w-full flex items-center justify-between gap-3 hover:shadow-glow-lg transition-all">
+            <div className="text-right min-w-0">
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white">پرسش از دستیار هوشمند</div>
+              <div className="text-[11px] text-gray-400">تحلیل اختصاصی این مزرعه</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0"><Sparkles size={18} /></div>
+          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => router.push('/pests')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
+              <ClipboardList size={18} className="text-brand-green" /><div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">گزارش‌ها</div>
+              <div className="text-[10px] text-gray-400 mt-1">{pests?.latest ? 'آخرین: ' + pests.latest.pestName : 'بدون گزارش'}</div>
+            </button>
+            <button onClick={() => router.push('/farms')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
+              <Sprout size={18} className="text-brand-green" /><div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">مزارع</div>
+              <div className="text-[10px] text-gray-400 mt-1">{fa(kpis.farmsCount ?? 0)} مزرعه · <span className="text-brand-green">افزودن</span></div>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [farms, setFarms] = useState<any[]>([]);
-  const [weather, setWeather] = useState<any>(null);
-  const [weatherHistory, setWeatherHistory] = useState<any[]>([]);
-  const [satellite, setSatellite] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadData = () => {
-    setLoading(true);
-    if (!isSessionValid()) {
-      clearSession();
-      router.push('/');
-      return;
-    }
-    const token = getAuthToken();
-
-    Promise.all([
-      fetch('/api/v1/auth/profile', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()),
-      fetch('/api/v1/farms', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()),
-    ]).then(async ([u, f]) => {
-      if (u.firstName) { setUser(u); localStorage.setItem('user', JSON.stringify(u)); }
-      const fl = Array.isArray(f) ? f : [];
-      setFarms(fl);
-
-      if (fl.length > 0) {
-        const farm = fl[0];
-        const city = farm.city || 'ساوه';
-
-        try {
-          // Weather dashboard (current + 5-day forecast)
-          const wRes = await fetch('/api/v1/weather/' + farm.id + '/dashboard?city=' + encodeURIComponent(city), {
-            headers: { Authorization: 'Bearer ' + token }
-          });
-          if (wRes.ok) setWeather(await wRes.json());
-        } catch {}
-
-        try {
-          // Weather history (for 30-day widget & charts)
-          const hRes = await fetch('/api/v1/weather/' + farm.id + '/history?days=30', {
-            headers: { Authorization: 'Bearer ' + token }
-          });
-          if (hRes.ok) setWeatherHistory(await hRes.json());
-        } catch {}
-
-        try {
-          // Satellite data
-          const sRes = await fetch('/api/v1/satellite/' + farm.id, {
-            headers: { Authorization: 'Bearer ' + token }
-          });
-          if (sRes.ok) setSatellite(await sRes.json());
-        } catch {}
-      }
-
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  };
-
-  useEffect(() => { loadData(); }, []);
-
-  // Toast welcome on first load
-  useEffect(() => {
-    if (!loading && user?.firstName) {
-      toast.success('خوش آمدید ' + user.firstName);
-    }
-  }, [loading]);
-
-  if (loading) {
-    return (
-      <div className="space-y-4 animate-pulse">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-night-surface" />
-          <div className="flex-1 space-y-2">
-            <div className="h-3 w-24 bg-gray-200 dark:bg-night-surface rounded" />
-            <div className="h-5 w-32 bg-gray-200 dark:bg-night-surface rounded" />
-          </div>
-        </div>
-        <div className="card shadow-glow"><div className="h-4 w-20 bg-gray-200 dark:bg-night-surface rounded mb-3" /></div>
-        <div className="card shadow-glow h-40 bg-gray-200 dark:bg-night-surface rounded" />
-        <div className="card shadow-glow h-40 bg-gray-200 dark:bg-night-surface rounded" />
-      </div>
-    );
-  }
-
-  const farm = farms[0];
-  const w = weather?.current;
-  const forecast = weather?.forecast || [];
-  const alerts: { type: 'danger' | 'warning'; text: string }[] = [];
-
-  if (w?.temperature != null) {
-    if (w.temperature > 38) alerts.push({ type: 'danger', text: 'دمای هوا بسیار بالا! خطر تنش گرمایی برای محصولات.' });
-    else if (w.temperature > 35) alerts.push({ type: 'warning', text: 'دمای بالا — در صورت امکان آبیاری را افزایش دهید.' });
-    if (w.humidity != null && w.humidity > 70) alerts.push({ type: 'warning', text: 'رطوبت بالا — خطر بیماری‌های قارچی افزایش یافته.' });
-    if (w.humidity != null && w.humidity < 20) alerts.push({ type: 'warning', text: 'رطوبت بسیار کم — احتمال تنش خشکی.' });
-  }
-
-  const chartData = (forecast.length > 0 ? forecast : weatherHistory.slice(0, 7)).map((d: any) => ({
-    label: d.date ? getPersianDayName(d.date).slice(0, 2) : '--',
-    temp: d.tempMax ? Math.round(d.tempMax) : undefined,
-    humidity: d.humidity ?? (d.dayPrecipitation ? 100 - d.dayPrecipitation : undefined),
-    precipitation: d.dayPrecipitation ?? null,
-  }));
-
   return (
-    <div>
-      {/* Refresh button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {user && (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-sm font-bold shadow-glow">
-              {user.firstName?.[0] || 'ک'}
-            </div>
-          )}
-          <div>
-            <p className="text-[10px] text-gray-500 dark:text-night-muted">خوش آمدی</p>
-            <p className="text-sm font-bold text-gray-800 dark:text-night-text">{user?.firstName || 'کاربر'} عزیز</p>
-          </div>
-        </div>
-        <button onClick={loadData} className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-night-surface flex items-center justify-center hover:bg-gray-200 dark:hover:bg-night-border transition-colors">
-          <RefreshCw size={16} className="text-gray-500" />
-        </button>
-      </div>
-
-      {farm && (
-        <div className="text-[10px] text-gray-500 dark:text-night-muted mb-3 flex items-center gap-2">
-          <Sprout size={12} className="text-brand-green" />
-          مزرعه: {farm.name} — {farm.city || 'ساوه'}
-          {farm.areaHa ? ` — ${farm.areaHa} هکتار` : ''}
-        </div>
-      )}
-
-      {/* Current Weather */}
-      {w && (
-        <div className="card shadow-glow mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] text-gray-500 dark:text-night-muted mb-0.5">وضعیت فعلی</p>
-              <p className="text-3xl font-extrabold text-gray-800 dark:text-night-text">{Math.round(w.temperature)}°</p>
-              <p className="text-xs text-gray-500 dark:text-night-muted mt-0.5">{w.weatherText || 'آفتابی'}</p>
-            </div>
-            <div className="text-center">
-              <Sun size={40} className="text-amber-400 mx-auto" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-night-border/50">
-            <div className="text-center"><Droplets size={14} className="mx-auto mb-1 text-blue-500" /><div className="text-xs font-bold text-gray-700 dark:text-night-text">{w.humidity ?? '--'}%</div><div className="text-[8px] text-gray-400">رطوبت</div></div>
-            <div className="text-center"><Wind size={14} className="mx-auto mb-1 text-teal-500" /><div className="text-xs font-bold text-gray-700 dark:text-night-text">{w.windSpeed ?? '--'}</div><div className="text-[8px] text-gray-400">باد (km/h)</div></div>
-            <div className="text-center"><Thermometer size={14} className="mx-auto mb-1 text-amber-500" /><div className="text-xs font-bold text-gray-700 dark:text-night-text">{w.temperature ? Math.round(w.temperature) : '--'}°</div><div className="text-[8px] text-gray-400">احساسی</div></div>
-          </div>
-        </div>
-      )}
-
-      {/* Recharts Charts */}
-      {chartData.length > 1 && (
-        <>
-          <TempHumidityChart data={chartData} />
-          <div className="mb-4" />
-          {chartData.some((d: any) => d.precipitation != null) && <PrecipBarChart data={chartData} />}
-          <div className="mb-4" />
-        </>
-      )}
-
-      {/* 30-Day Weather Widget */}
-      {weatherHistory.length > 0 && (
-        <>
-          <MonthWeatherWidget history={weatherHistory.slice(0, 25)} forecast={forecast} />
-          <div className="mb-4" />
-        </>
-      )}
-
-      {/* Satellite Data */}
-      <SatelliteCard data={satellite} />
-      <div className="mb-4" />
-
-      {/* 5-Day Forecast */}
-      {forecast.length > 0 && (
-        <div className="card shadow-glow mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Sun size={16} className="text-amber-500" />
-            <h3 className="text-xs font-bold text-gray-600 dark:text-night-muted">پیش‌بینی ۵ روزه</h3>
-          </div>
-          <div className="flex gap-1">
-            {forecast.slice(0, 5).map((d: any, i: number) => (
-              <div key={i} className="flex-1 text-center bg-gray-50/50 dark:bg-night-surface/50 rounded-xl py-2">
-                <div className="text-[10px] text-gray-500 dark:text-white/65">{getPersianDayName(d.date)}</div>
-                <div className="flex justify-center my-1"><ForecastIcon precip={d.dayPrecipitation} tempMax={d.tempMax} /></div>
-                <div className="text-sm font-bold text-gray-800 dark:text-white">{d.tempMax ? Math.round(d.tempMax) : '--'}°</div>
-                {d.dayPrecipitation != null && <div className="text-[9px] text-blue-400">بارش {d.dayPrecipitation}%</div>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Alerts */}
-      {alerts.length > 0 && (
-        <div className="card mb-4 shadow-glow">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="text-amber-500" size={18} />
-            <h3 className="text-sm font-medium text-gray-600 dark:text-white/80">هشدارها و توصیه‌ها</h3>
-          </div>
-          {alerts.map((a, i) => (
-            <div key={i} className={'text-xs rounded-lg px-3 py-2 mb-1 flex items-center gap-1.5 ' + (a.type === 'danger' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300')}>
-              {a.type === 'danger' ? <AlertCircle size={14} /> : <AlertTriangle size={14} />}{a.text}
-            </div>
-          ))}
-          <button onClick={() => router.push('/ai')} className="flex items-center gap-1 text-xs text-brand-green hover:text-brand-green/80 underline mt-2 transition-colors"><Sparkles size={13} /> از AI مشورت بگیر</button>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div onClick={() => router.push('/irrigation')} className="card text-center cursor-pointer shadow-glow hover:shadow-glow-lg hover:scale-[1.02] transition-all">
-          <Droplets className="w-8 h-8 mx-auto mb-1 text-brand-green" /><div className="text-xs font-bold text-gray-700 dark:text-white/80">آبیاری</div>
-        </div>
-        <div onClick={() => router.push('/pests')} className="card text-center cursor-pointer shadow-glow hover:shadow-glow-lg hover:scale-[1.02] transition-all">
-          <Bug className="w-8 h-8 mx-auto mb-1 text-brand-green" /><div className="text-xs font-bold text-gray-700 dark:text-white/80">آفات</div>
-        </div>
-        <div onClick={() => router.push('/farms')} className="card text-center cursor-pointer shadow-glow hover:shadow-glow-lg hover:scale-[1.02] transition-all">
-          <Sprout className="w-8 h-8 mx-auto mb-1 text-brand-green" /><div className="text-xs font-bold text-gray-700 dark:text-white/80">مزارع</div>
-        </div>
-        <div onClick={() => router.push('/ai')} className="card text-center cursor-pointer shadow-glow hover:shadow-glow-lg hover:scale-[1.02] transition-all">
-          <Sparkles className="w-8 h-8 mx-auto mb-1 text-brand-green" /><div className="text-xs font-bold text-gray-700 dark:text-white/80">دستیار AI</div>
-        </div>
-      </div>
-    </div>
+    <Suspense fallback={<div className="space-y-3 animate-pulse">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="card h-24 rounded-2xl bg-white/5" />)}</div>}>
+      <DashboardInner />
+    </Suspense>
   );
 }
