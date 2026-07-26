@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { FileText, Download, Plus, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import Dropdown from '@/components/Dropdown';
@@ -8,8 +8,7 @@ import { fa, formatJalali } from '@/lib/jalali';
 
 const H = () => ({ Authorization: 'Bearer ' + (localStorage.getItem('token') || '') });
 
-export default function ReportsPage() {
-  const router = useRouter();
+function ReportsPageInner() {
   const sp = useSearchParams(); const farmParam = sp.get('farm');
   const [farms, setFarms] = useState<any[]>([]);
   const [farmId, setFarmId] = useState('');
@@ -78,9 +77,16 @@ export default function ReportsPage() {
         </div>
         <div>
           <div className="text-sm font-bold text-gray-900 dark:text-white mb-2">گزارش‌های ذخیره‌شده</div>
-          {list.length ? <div className="space-y-2">{list.map((x: any) => (<div key={x.id} className="rounded-xl bg-white/5 p-3 flex items-center justify-between"><span className="text-[11px] text-brand-green">{typeFa(x.type)}</span><div className="text-right"><div className="text-xs font-bold text-gray-900 dark:text-white">{typeFa(x.type)}</div><div className="text-[10px] text-gray-400">{formatJalali(x.createdAt)}</div></div></div>))}</div> : <p className="text-xs text-gray-400">هنوز گزارشی ذخیره نشده؛ با دکمه‌های بالا بسازید.</p>}
+          {list.length ? <div className="space-y-2">{list.map((x: any) => (<div key={x.id} className="rounded-xl bg-white/5 p-3 flex items-center justify-between"><FileText size={14} className="text-brand-green" /><div className="text-right"><div className="text-xs font-bold text-gray-900 dark:text-white">{typeFa(x.type)}</div><div className="text-[10px] text-gray-400">{formatJalali(x.createdAt)}</div></div></div>))}</div> : <p className="text-xs text-gray-400">هنوز گزارشی ذخیره نشده؛ با دکمه‌های بالا بسازید.</p>}
         </div>
       </div>
     </div>
+  );
+}
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={<div className="space-y-3 animate-pulse">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="card h-24 rounded-2xl bg-white/5" />)}</div>}>
+      <ReportsPageInner />
+    </Suspense>
   );
 }
