@@ -10,10 +10,10 @@ import { toast } from '@/lib/toast';
 import Dropdown from '@/components/Dropdown';
 import { fa, gregorianToJalaliParts } from '@/lib/jalali';
 import { cropLabel } from '@/lib/crops';
+import { JALALI_MONTHS } from '@/lib/utils';
 
 const DAY = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
 const H = () => ({ Authorization: 'Bearer ' + (localStorage.getItem('token') || '') });
-const PLAN_FA: Record<string, string> = { FREE: 'رایگان', BASIC: 'پایه', PREMIUM: 'حرفه‌ای', ENTERPRISE: 'سازمانی' };
 
 function wmoIcon(code?: number | null) {
   if (code == null) return { I: CloudSun, c: 'text-gray-400' };
@@ -102,7 +102,7 @@ function DashboardInner() {
       <div className="flex items-center justify-between gap-2">
         <div className="text-right min-w-0">
           <p className="text-base font-extrabold text-gray-900 dark:text-white truncate">سلام {user?.firstName || 'کشاورز'}</p>
-          <p className="text-[11px] text-gray-500 dark:text-night-muted">{fa(new Date().toLocaleDateString('en-CA'))}{user?.plan ? ' · ' + (PLAN_FA[user.plan] || user.plan) : ''}</p>
+          <p className="text-[11px] text-gray-500 dark:text-night-muted">{(() => { const d = new Date(); const j = gregorianToJalaliParts(d); return `خوش آمدید · ${DAY[d.getDay()]}، ${fa(j.day)} ${JALALI_MONTHS[j.month - 1]} ${fa(j.year)}`; })()}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => farmId && loadPanel(farmId)} className="w-9 h-9 rounded-xl bg-white/5 dark:bg-night-surface flex items-center justify-center hover:bg-white/10"><RefreshCw size={15} className="text-gray-400" /></button>
@@ -185,7 +185,7 @@ function DashboardInner() {
                   {([['NDVI', sat.latest.ndvi], ['EVI', sat.latest.evi], ['NDWI', sat.latest.ndwi], ['MSI', sat.latest.msi]] as any).map(([k, v]: any) => (
                     <div key={k} className="rounded-xl bg-white/5 p-2"><div className="text-sm font-extrabold text-brand-green">{v != null ? fa(v) : '—'}</div><div className="text-[9px] text-gray-400">{k}</div></div>))}
                 </div>
-                {trend.length > 1 && <div style={{ width: '100%', height: 120 }} className="mt-3"><ResponsiveContainer><LineChart data={trend}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="d" tick={{ fontSize: 9, fill: '#94a3b8' }} /><YAxis domain={[0, 1]} tick={{ fontSize: 9, fill: '#94a3b8' }} width={24} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="ndvi" stroke="#22c55e" dot={false} strokeWidth={2} name="NDVI" /><Line type="monotone" dataKey="evi" stroke="#38bdf8" dot={false} strokeWidth={2} name="EVI" /></LineChart></ResponsiveContainer></div>}
+                {trend.length > 1 && <div style={{ width: '100%', height: 160 }} className="mt-3"><ResponsiveContainer><LineChart data={trend} margin={{ top: 8, right: 10, left: 0, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="d" tick={{ fontSize: 9, fill: '#94a3b8' }} tickMargin={6} height={26} /><YAxis domain={[0, 1]} tick={{ fontSize: 9, fill: '#94a3b8' }} tickMargin={6} width={28} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="ndvi" stroke="#22c55e" dot={false} strokeWidth={2} name="NDVI" /><Line type="monotone" dataKey="evi" stroke="#38bdf8" dot={false} strokeWidth={2} name="EVI" /></LineChart></ResponsiveContainer></div>}
               </>
             ) : (
               <div className="text-center py-4"><Satellite size={26} className="mx-auto text-gray-400 mb-2" /><p className="text-sm text-gray-500">دادهٔ ماهواره‌ای هنوز موجود نیست.</p><p className="text-[11px] text-gray-400 mt-1">پس از تعیین محدودهٔ مزرعه، شاخص‌ها اینجا نمایش داده می‌شوند.</p></div>
@@ -211,7 +211,7 @@ function DashboardInner() {
           {series.length > 1 && (
             <div className="card p-4 space-y-3">
               <div className="text-right text-sm font-bold text-gray-900 dark:text-white">روند ۳۰ روزه</div>
-              <div style={{ width: '100%', height: 150 }}><ResponsiveContainer><LineChart data={series}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="date" tickFormatter={v => fa(gregorianToJalaliParts(v).day)} tick={{ fontSize: 9, fill: '#94a3b8' }} minTickGap={26} /><YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} width={24} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="tmax" stroke="#f59e0b" dot={false} strokeWidth={2} name="بیشینه" /><Line type="monotone" dataKey="tmin" stroke="#38bdf8" dot={false} strokeWidth={2} name="کمینه" /></LineChart></ResponsiveContainer></div>
+              <div style={{ width: '100%', height: 190 }}><ResponsiveContainer><LineChart data={series} margin={{ top: 10, right: 10, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" /><XAxis dataKey="date" tickFormatter={v => fa(gregorianToJalaliParts(v).day)} tick={{ fontSize: 9, fill: '#94a3b8' }} tickMargin={8} minTickGap={26} height={30} /><YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} tickMargin={6} width={30} /><Tooltip contentStyle={{ background: 'rgba(10,26,18,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} /><Line type="monotone" dataKey="tmax" stroke="#f59e0b" dot={false} strokeWidth={2} name="بیشینه" /><Line type="monotone" dataKey="tmin" stroke="#38bdf8" dot={false} strokeWidth={2} name="کمینه" /></LineChart></ResponsiveContainer></div>
               {stats && <div className="grid grid-cols-4 gap-2 text-center text-[10px] text-gray-400">
                 <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-sky-400">{fa(stats.rainyDays)}</div>روز بارانی</div>
                 <div className="rounded-lg bg-white/5 p-2"><div className="text-sm font-extrabold text-sky-300">{fa(stats.minTemp)}°</div>حداقل</div>
@@ -230,9 +230,10 @@ function DashboardInner() {
             <div className="w-10 h-10 rounded-xl bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0"><Sparkles size={18} /></div>
           </button>
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => router.push('/pests')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
-              <ClipboardList size={18} className="text-brand-green" /><div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">گزارش‌ها</div>
-              <div className="text-[10px] text-gray-400 mt-1">{pests?.latest ? 'آخرین: ' + pests.latest.pestName : 'بدون گزارش'}</div>
+            <button onClick={() => router.push('/reports')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
+              <ClipboardList size={18} className="text-brand-green" />
+              <div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">گزارش‌ها</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">مشاهده و دانلود PDF</div>
             </button>
             <button onClick={() => router.push('/farms')} className="card p-4 text-right hover:shadow-glow-lg transition-all">
               <Sprout size={18} className="text-brand-green" /><div className="text-sm font-extrabold text-gray-900 dark:text-white mt-2">مزارع</div>
