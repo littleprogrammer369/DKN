@@ -217,3 +217,14 @@ p, span, label, div { color: inherit; }
               0 -6px 24px -6px rgba(16,185,129,0.22),
               0 8px 30px -8px rgba(0,0,0,0.5);
 }
+
+/* ── Print stylesheet for reports ── */
+@media print {
+  body * { visibility: hidden !important; }
+  [data-print="report"], [data-print="report"] * {
+    visibility: visible !important; color: #111 !important;
+    border-color: #d1d5db !important; background: #fff !important;
+  }
+  [data-print="report"] { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+}
+

@@ -108,6 +108,7 @@ model Farm {
   pestReports     PestReport[]
   aiChats         AIChat[]
   notifications   Notification[]
+  reports         FarmReport[]
 
   @@index([userId])
   @@map("farms")
@@ -321,3 +322,21 @@ model AppSetting {
 
   @@map("app_settings")
 }
+
+// ─── Farm Reports (stored) ────────────────────────────────
+
+model FarmReport {
+  id          String   @id @default(uuid()) @db.Uuid
+  farmId      String   @map("farm_id") @db.Uuid
+  type        String   @db.VarChar(20)   // weekly | monthly | manual
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  summary     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, createdAt])
+  @@map("farm_reports")
+}
+

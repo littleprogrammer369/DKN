@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -30,5 +30,23 @@ export class ReportsService {
         'آبیاری بعدی: امشب ساعت ۲۱:۰۰',
       ],
     };
+  }
+
+
+  async listReports(farmId: string) {
+    return this.prisma.farmReport.findMany({ where: { farmId }, orderBy: { createdAt: 'desc' } });
+  }
+
+  async generateReport(farmId: string, type: string, userId?: string) {
+    if (userId) {
+      const owns = await this.prisma.farm.findFirst({ where: { id: farmId, userId } });
+      if (!owns) throw new ForbiddenException('دسترسی ندارید');
+    }
+    const now = new Date();
+    const periodStart = new Date(now.getTime() - (type === 'monthly' ? 30 : 7) * 864e5);
+    const summary = await this.getFarmReport(farmId);
+    return this.prisma.farmReport.create({
+      data: { farmId, type: type || 'manual', periodStart, periodEnd: now, summary: summary as any },
+    });
   }
 }
